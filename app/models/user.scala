@@ -1,7 +1,11 @@
 package models;
 
+import persistence._
+
 import play.api.db._
 import play.api.Play.current
+
+import com.mongodb.casbah.Imports._
 
 import anorm._
 import anorm.SqlParser._
@@ -10,9 +14,19 @@ import java.util.UUID
 
 case class User(
   id: Pk[String]= Id(UUID.randomUUID.toString), 
-  email: String, name: String, profilePicId: String, points: Int, credits: Int, fbToken: String
+  email: String, name: String, profilePicId: String, points: Int, credits: Int, fbToken: String){
 
-)
+  def posts ={
+    val query = MongoDBObject("user_id" -> this.id)
+    val cursor = Mongo.posts.find(query)
+    cursor
+    
+  }
+}
+
+  
+
+
 
 object User {
  
