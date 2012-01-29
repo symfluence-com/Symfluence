@@ -7,7 +7,7 @@ import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 
 case class Post(id: ObjectId = ObjectId.get, text:Option[String], image_id:Option[String], 
-  latitude:Option[Double], longitude:Option[Double], userId:String, mainPostId:Option[ObjectId], 
+  latitude:Option[Double], longitude:Option[Double], userId:String, groupId:String, mainPostId:Option[ObjectId],
   commentIds:Option[List[ObjectId]], timestamp:Long=System.currentTimeMillis) {
 
   def comments:List[Post]={
@@ -15,7 +15,7 @@ case class Post(id: ObjectId = ObjectId.get, text:Option[String], image_id:Optio
     Mongo.posts.find(q).toList.map(rawObject => Post.postMapper(rawObject))
   }
 
-  
+
   def toRawObject={
     val builder = MongoDBObject.newBuilder
     builder += "text" -> this.text
@@ -23,6 +23,7 @@ case class Post(id: ObjectId = ObjectId.get, text:Option[String], image_id:Optio
     builder += "latitude" -> this.latitude
     builder += "longitude" -> this.longitude
     builder += "user_id" -> this.userId
+    builder += "group_id" -> this.groupId
     val commentListBuilder =  MongoDBList.newBuilder
     this.commentIds.getOrElse(List()).foreach{id => 
     commentListBuilder +=  id
@@ -39,9 +40,27 @@ case class Post(id: ObjectId = ObjectId.get, text:Option[String], image_id:Optio
 object Post{
   def postMapper(rawObject:DBObject):Post={
     Post(rawObject.getAs[ObjectId]("_id").get, rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
-      rawObject.getAs[Double]("latitude"), rawObject.getAs[Double]("longitude"), rawObject.getAs[String]("user_id").get,
+      rawObject.getAs[Double]("latitude"), rawObject.getAs[Double]("longitude"), rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("group_id").get,
       rawObject.getAs[ObjectId]("main_post_id"), rawObject.getAs[List[ObjectId]]("comment_ids"),
       rawObject.getAs[Long]("timestamp").get)
+  }
+
+  def findAll:Option[List[Post]] = {
+    Some(Mongo.posts.find.toList.map(rawObject => Post.postMapper(rawObject)))
+  }
+
+  def findById(id:String):Option[Post]={
+    findById(new ObjectId(id))
+  }
+
+  def findById(id:ObjectId):Option[Post]={
+    val rawObject = Mongo.posts.findOne(MongoDBObject("_id" -> id))
+    if (rawObject.isDefined){
+      Some(Post.postMapper(rawObject.get))
+    }
+    else{
+      None
+    }
   }
 }
 

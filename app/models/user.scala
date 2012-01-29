@@ -17,9 +17,17 @@ case class User(
   id: Pk[String]= Id(UUID.randomUUID.toString), 
   email: String, name: String, profilePicId: String, points: Int, credits: Int, fbToken: String){
 
-  def posts ={
-    val query = MongoDBObject("user_id" -> this.id)
-      Mongo.posts.find(query).toList.map(rawObject => Post.postMapper(rawObject))
+  private var posts:Option[List[Post]]= None
+  private var followers:Option[List[User]] = None
+
+  def getPost ={
+    if (posts.isDefined){
+      posts
+    }
+    else {
+      val query = MongoDBObject("user_id" -> this.id)
+      posts =Some(Mongo.posts.find(query).toList.map(rawObject => Post.postMapper(rawObject)))
+    }
   }
 
   def post(post:Post) ={
@@ -36,14 +44,44 @@ case class User(
     }
   }
 
+  def followUser(user:User){
+    val count = DB.withConnection{ implicit connection =>
+      SQL(
+        "INSERT INTO users_followers(user_id, follower_id) VALUES({user_id}, {follower_id})"
+      ).on("user_id" -> this.id, "follower_id" -> user.id).executeUpdate()
+    }
+    if(count > 0){
+      true
+    }
+    else{
+      false
+    }
+
+  }
+
+  def getFollowers:Option[List[User]]={
+    if (followers.isDefined){
+      followers
+    }
+    else{
+      followers = Some(DB.withConnection{ implicit connection =>
+        SQL(
+          """
+          SELECT users.* FROM users, users_followers WHERE users_followers.user_id = {user_id}
+          AND users.id  = users_followers.follower_id"
+          """
+        ).on("user_id" -> this.id).as(User.simple *)
+
+      })
+      followers
+    }
+  }
+
+
 }
 
-
-
-
-
 object User {
- 
+
     val simple = {
         get[Pk[String]]("users.id") ~
         get[String]("users.email") ~
@@ -56,6 +94,12 @@ object User {
         }
     }
 
+    val withFollowers = User.simple ~ (User.simple ?) map {
+      case user~follower => (user, follower)
+    }
+
+
+
     def findById(id: String): Option[User] = {
         DB.withConnection { implicit connection =>
         SQL("select * from users where id = {id}").on("id" -> id).as(User.simple.singleOpt)
@@ -66,8 +110,8 @@ object User {
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                insert into users(id, email, name, profile_pic_id, points, credits, fb_token) 
-                values ({id}, {email}, {name}, {profile_pic_id}, {points}, {credits}, {fb_token})
+                INSERT INTO users(id, email, name, profile_pic_id, points, credits, fb_token) 
+                VALUES ({id}, {email}, {name}, {profile_pic_id}, {points}, {credits}, {fb_token})
                 """
             ).on(
                 "id" -> user.id, 
@@ -81,7 +125,7 @@ object User {
         }
     }
 
-  
+
     def findAll(): Seq[User] = {
         DB.withConnection { implicit connection =>
             SQL("select * from users").as(User.simple *) 
