@@ -1,6 +1,7 @@
 package models;
 
 import persistence._
+import exception._
 
 import play.api.db._
 import play.api.Play.current
@@ -18,13 +19,26 @@ case class User(
 
   def posts ={
     val query = MongoDBObject("user_id" -> this.id)
-    val cursor = Mongo.posts.find(query)
-    cursor
-    
+      Mongo.posts.find(query).toList.map(rawObject => Post.postMapper(rawObject))
   }
+
+  def post(post:Post) ={
+    val rawObject = post.toRawObject
+    Mongo.posts.save(rawObject)
+  }
+
+  def deletePost(post:Post){
+    if(post.userId == this.id.toString){
+      Mongo.posts.remove(MongoDBObject("_id" -> post.id))
+    }
+    else{
+      throw new NotAuthorizedException()
+    }
+  }
+
 }
 
-  
+
 
 
 
