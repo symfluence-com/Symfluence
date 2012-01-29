@@ -49,6 +49,12 @@ object Post{
     Some(Mongo.posts.find.toList.map(rawObject => Post.postMapper(rawObject)))
   }
 
+  def findPostInGroup(group:Group) ={
+    val posts = Some(Mongo.posts.find(MongoDBObject("group_id" -> group.id)).toList.map(rawObject=>
+      Post.postMapper(rawObject)))
+
+  }
+
   def findById(id:String):Option[Post]={
     findById(new ObjectId(id))
   }

@@ -12,7 +12,26 @@ import java.util.UUID
 case class Group(
   id: Pk[String] = Id(UUID.randomUUID.toString),
   name: String, profilePicId: String, description: String
-)
+){
+  private var users:Option[List[User]] = None
+
+  def getUsers={
+    if (users.isDefined){
+      users
+    }
+    else{
+      DB.withConnection{ implicit connection => 
+        SQL(
+          """
+          SELECT users.* FROM users, users_groups WHERE users_groups.group_id = {group_id} AND
+          users.id = users_groups.user_id
+          """
+        ).on("group_id" -> this.id).as(User.simple *)
+      }
+    }
+
+  }
+}
 
 object Group{
     val simple = {
