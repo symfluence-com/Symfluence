@@ -20,7 +20,7 @@ case class User(
   private var posts:Option[List[Post]]= None
   private var followers:Option[List[User]] = None
 
-  def getPost ={
+  def getPosts ={
     if (posts.isDefined){
       posts
     }
