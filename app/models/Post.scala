@@ -6,9 +6,16 @@ import org.bson.types.ObjectId
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 
-case class Post(id: ObjectId = ObjectId.get, text:Option[String], image_id:Option[String], 
-  latitude:Option[Double], longitude:Option[Double], userId:String, groupId:String, mainPostId:Option[ObjectId],
-  commentIds:Option[List[ObjectId]], timestamp:Long=System.currentTimeMillis) {
+case class Post(id: ObjectId = ObjectId.get,
+                text:Option[String],
+                image_id:Option[String],
+                latitude:Option[Double], 
+                longitude:Option[Double], 
+                userId:String,
+                groupId:String, 
+                mainPostId:Option[ObjectId],
+                commentIds:Option[List[ObjectId]], 
+                timestamp:Long=System.currentTimeMillis) {
 
   def comments:List[Post]={
     val q = "_id" $in commentIds

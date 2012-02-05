@@ -1,5 +1,9 @@
 package models;
 
+import org.joda.time._
+import org.joda.time.format._
+import org.joda.convert.FromString
+
 import persistence._
 import exception._
 
@@ -14,8 +18,15 @@ import anorm.SqlParser._
 import java.util.UUID
 
 case class User(
-  id: Pk[String]= Id(UUID.randomUUID.toString), 
-  email: String, name: String, profilePicId: String, points: Int, credits: Int, fbToken: String){
+    id: Pk[String]= Id(UUID.randomUUID.toString.replace("-", "")), 
+    email: String, 
+    name: String, 
+    profilePicId: String, 
+    points: Int, 
+    credits: Int, 
+    fbToken: String,
+    createdAt: Date = new DateTime(DateTimeZone.UTC),
+    updatedAt: Date = new DateTime(DateTimeZone.UTC)){
 
   private var posts:Option[List[Post]]= None
   private var followers:Option[List[User]] = None
@@ -77,6 +88,24 @@ case class User(
     }
   }
 
+  def addGroup(group:Group){
+    val count = DB.withConnection{ implicit connection =>
+      SQL(
+        """
+          INSERT INTO users_groups(user_id, group_id, created_at, updated_at) 
+          VALUES({user_id}, {group_id}, {created_at}, {updated_at})
+        """
+    ).on("user_id" -> this.id, "group_id" -> group.id, "created_at" -> new DateTime(DateTimeZone.UTC), "updated_at" -> new DateTime(DateTimeZone.UTC)).executeUpdate()
+    }
+    if(count > 0){
+        true
+    }
+    else{
+        false
+    }
+  }
+
+
 
 }
 
@@ -89,8 +118,10 @@ object User {
         get[String]("users.profile_pic_id") ~
         get[Int]("users.points") ~
         get[Int]("users.credits") ~
-        get[String]("users.fb_token") map {
-            case id ~ email ~ name ~ profilePicId ~ points ~ credits ~ fbToken => User(id, email, name, profilePicId, points, credits, fbToken)
+        get[String]("users.fb_token") ~
+        get[Date]("users.created_at") ~
+        get[Date]("users.updated_at") map {
+            case id ~ email ~ name ~ profilePicId ~ points ~ credits ~ fbToken ~ createdAt ~ updatedAt=> User(id, email, name, profilePicId, points, credits, fbToken, createdAt, updatedAt)
         }
     }
 
@@ -110,8 +141,8 @@ object User {
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                INSERT INTO users(id, email, name, profile_pic_id, points, credits, fb_token) 
-                VALUES ({id}, {email}, {name}, {profile_pic_id}, {points}, {credits}, {fb_token})
+                INSERT INTO users(id, email, name, profile_pic_id, points, credits, fb_token, created_at, updated_at) 
+                VALUES ({id}, {email}, {name}, {profile_pic_id}, {points}, {credits}, {fb_token}, {created_at}, {updated_at})
                 """
             ).on(
                 "id" -> user.id, 
@@ -120,7 +151,9 @@ object User {
                 "profile_pic_id" -> user.profilePicId,
                 "points" -> user.points,
                 "credits" -> user.credits,
-                "fb_token" -> user.fbToken
+                "fb_token" -> user.fbToken,
+                "created_at" -> user.createdAt,
+                "updated_at" -> user.updatedAt
             ).executeUpdate()
         }
     }
