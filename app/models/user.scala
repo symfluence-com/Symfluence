@@ -31,13 +31,14 @@ case class User(
   private var posts:Option[List[Post]]= None
   private var followers:Option[List[User]] = None
 
-  def getPosts ={
+  def getPosts:Option[List[Post]]={
     if (posts.isDefined){
       posts
     }
     else {
       val query = MongoDBObject("user_id" -> this.id)
       posts =Some(Mongo.posts.find(query).toList.map(rawObject => Post.postMapper(rawObject)))
+      posts
     }
   }
 

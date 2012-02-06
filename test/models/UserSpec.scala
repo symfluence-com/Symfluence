@@ -24,6 +24,14 @@ object UserSpec extends Specification {
 
     }
 
+    "all be retrieved" in{
+      running(FakeApplication()) {
+        val users = User.findAll
+        users.size must equalTo(10)
+      }
+
+    }
+
     "can be inserted" in {
         running(FakeApplication()) {
           val user = User(email="frank_awesomeness@gmail.com", name="Frank Awesomeness", profilePicId="frankAwesomeness", points=100, credits=100, fbToken="fdjsklfjds")
@@ -32,12 +40,37 @@ object UserSpec extends Specification {
 
     }
 
-    "all be retrieved" in{
-        running(FakeApplication()) {
-          true
-        }
-
+    "can get all Posts by Users" in {
+      running(FakeApplication()){
+        val user = User.findById("67326e22500c11e1a2ce040cced6719e")
+        user.get.asInstanceOf[User].getPosts.get.size must equalTo(10)
+      }
     }
+
+    "can Post" in {
+      running(FakeApplication()){
+        true
+      }
+    }
+
+    "can follow User" in {
+      running(FakeApplication()){
+        true
+      }
+    }
+
+    "can get Followers" in {
+      running(FakeApplication()){
+        true
+      }
+    }
+
+    "can get group" in {
+      running(FakeApplication()){
+        true
+      }
+    }
+
 
   }
 
