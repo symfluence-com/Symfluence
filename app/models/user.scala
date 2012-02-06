@@ -2,7 +2,6 @@ package models;
 
 import org.joda.time._
 import org.joda.time.format._
-import org.joda.convert.FromString
 
 import persistence._
 import exception._
@@ -16,6 +15,7 @@ import anorm._
 import anorm.SqlParser._
 
 import java.util.UUID
+import java.util.Date
 
 case class User(
     id: Pk[String]= Id(UUID.randomUUID.toString.replace("-", "")), 
@@ -25,8 +25,8 @@ case class User(
     points: Int, 
     credits: Int, 
     fbToken: String,
-    createdAt: Date = new DateTime(DateTimeZone.UTC),
-    updatedAt: Date = new DateTime(DateTimeZone.UTC)){
+    createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
+    updatedAt: DateTime = DateTime.now(DateTimeZone.UTC)){
 
   private var posts:Option[List[Post]]= None
   private var followers:Option[List[User]] = None
@@ -95,7 +95,7 @@ case class User(
           INSERT INTO users_groups(user_id, group_id, created_at, updated_at) 
           VALUES({user_id}, {group_id}, {created_at}, {updated_at})
         """
-    ).on("user_id" -> this.id, "group_id" -> group.id, "created_at" -> new DateTime(DateTimeZone.UTC), "updated_at" -> new DateTime(DateTimeZone.UTC)).executeUpdate()
+    ).on("user_id" -> this.id, "group_id" -> group.id, "created_at" -> DateTime.now(DateTimeZone.UTC), "updated_at" -> DateTime.now(DateTimeZone.UTC)).executeUpdate()
     }
     if(count > 0){
         true
@@ -121,7 +121,7 @@ object User {
         get[String]("users.fb_token") ~
         get[Date]("users.created_at") ~
         get[Date]("users.updated_at") map {
-            case id ~ email ~ name ~ profilePicId ~ points ~ credits ~ fbToken ~ createdAt ~ updatedAt=> User(id, email, name, profilePicId, points, credits, fbToken, createdAt, updatedAt)
+            case id ~ email ~ name ~ profilePicId ~ points ~ credits ~ fbToken ~ createdAt ~ updatedAt=> User(id, email, name, profilePicId, points, credits, fbToken, new DateTime(createdAt), new DateTime(updatedAt))
         }
     }
 
@@ -152,8 +152,8 @@ object User {
                 "points" -> user.points,
                 "credits" -> user.credits,
                 "fb_token" -> user.fbToken,
-                "created_at" -> user.createdAt,
-                "updated_at" -> user.updatedAt
+                "created_at" -> user.createdAt.toDate.asInstanceOf[java.util.Date],
+                "updated_at" -> user.updatedAt.toDate.asInstanceOf[java.util.Date]
             ).executeUpdate()
         }
     }

@@ -33,7 +33,7 @@ object UserSpec extends Specification {
     }
 
     "all be retrieved" in{
-        running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        running(FakeApplication()) {
           true
         }
 

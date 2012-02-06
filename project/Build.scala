@@ -10,11 +10,15 @@ object ApplicationBuild extends Build {
     val appDependencies = Seq(
       // Add your project dependencies here,
       "com.mongodb.casbah" %% "casbah" % "2.1.5-1",
-      "joda-time" % "joda-time" % "2.0"
+      "joda-time" % "joda-time" % "2.0",
+      "org.joda" % "joda-convert" % "1.2",
+      "net.sf.ehcache" %  "ehcache-core" %   "2.5.0"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
       // Add your own project settings here      
     )
+
+    testOptions in Test := Nil 
 
 }
