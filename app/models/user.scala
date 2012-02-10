@@ -149,6 +149,12 @@ object User {
         }
     }
 
+
+    def findByEmail(email: String):Optionn[User] ={
+        DB.withConnection{ implicit connection =>
+        SQL("select * from users where email = {email}").on("email" -> email).as(User.simple.singleOpt)
+    }
+
     def insert(user: User) = {
         DB.withConnection { implicit connection =>
             SQL(
