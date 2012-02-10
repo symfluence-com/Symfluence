@@ -43,27 +43,45 @@ object UserSpec extends Specification {
     "can find user by email" in {
       running(FakeApplication()){
         val user = User.findByEmail("frank_awesomeness@gmail.com").get
+        user mustNotEqual None
 
-    }
-
-    "can get all Posts by Users" in {
-      running(FakeApplication()){
-        val user = User.findById("4789200253f411e1b371040cced6719e")
-        user.get.asInstanceOf[User].getPosts.get.length must equalTo(10)
-      }
-    }
-
-    "can delete user" {
-      running(FakeApplication()){
-        val user = User.findBy
       }
     }
 
     "can Post" in {
       running(FakeApplication()){
-        true
+        val user = User.findById("4789200253f411e1b371040cced6719e").get
+        val post = Post(text=Some("Test Post"), imageId=None, latitude=Some(0.001), longitude=Some(0.002),
+          userId= user.id.toString, groupId = user.getGroups.head.id.toString, mainPostId= None, commentIds=None)
+        user.post(post)
+        user.asInstanceOf[User].getPosts.get.length must equalTo(4)
       }
     }
+
+    "can get all Posts by Users" in {
+      running(FakeApplication()){
+        val user = User.findById("4789200253f411e1b371040cced6719e")
+        user.get.asInstanceOf[User].getPosts.get.length must equalTo(4)
+      }
+    }
+
+   "can delete post by user" in {
+      running(FakeApplication()){
+        val user = User.findById("4789200253f411e1b371040cced6719e").get
+        val post = user.getPosts.get.head
+        user.deletePost(post)
+        user.getPosts.get.length must equalTo(3)
+      }
+   }
+
+    "can delete user" in {
+      running(FakeApplication()){
+        val user = User.findByEmail("frank_awesomeness@gmail.com").get
+        user.delete must equalTo(1)
+
+      }
+    }
+
 
     "can follow User" in {
       running(FakeApplication()){

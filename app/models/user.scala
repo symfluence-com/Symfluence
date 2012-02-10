@@ -1,5 +1,6 @@
 package models;
 
+
 import org.joda.time._
 import org.joda.time.format._
 
@@ -43,14 +44,38 @@ case class User(
     }
   }
 
-  def post(post:Post) ={
-    val rawObject = post.toRawObject
+  def post(postObject:Post) ={
+    val rawObject = postObject.toRawObject
     Mongo.posts.save(rawObject)
+    val count = DB.withConnection{ implicit connection =>
+      SQL(
+          """
+            INSERT INTO users_posts
+            (user_id, post_id, group_id, created_at, updated_at) 
+            VALUES({user_id}, {post_id}, {group_id}, {created_at}, {updated_at})
+          """
+        ).on("user_id" -> this.id, "post_id" -> postObject.id, "group_id"-> postObject.groupId, "created_at"-> new Date(), "updated_at" -> new Date()).executeUpdate()
+    }
+    if (posts.isDefined){
+        posts = Some(postObject::posts.get)
+    }
+
   }
 
   def deletePost(post:Post){
     if(post.userId == this.id.toString){
       Mongo.posts.remove(MongoDBObject("_id" -> post.id))
+       val count = DB.withConnection{ implicit connection =>
+          SQL(
+              """
+                delete from users_posts where users_posts.post_id ={post_id}
+              """
+            ).on("post_id" -> post.id).executeUpdate()
+      }
+      if (posts.isDefined){
+          posts = Some(posts.get.filterNot(postExisting => { postExisting == post }))
+      }
+
     }
     else{
       throw new NotAuthorizedException()
@@ -107,18 +132,29 @@ case class User(
     }
   }
 
-
-  def delete={
-    val count = DB.withConnection{ implicit connection => 
-      SQL(
-        """ 
-          DELETE FROM users where id = {user_id}
-        """
-      ).on("user_id"  -> this.id)
+  def getGroups:Seq[Group]={
+      val groups = DB.withConnection{implicit connection =>
+        SQL(
+           """
+             SELECT groups.* from groups, users_groups where users_groups.user_id =
+             {user_id} and groups.id = users_groups.group_id
+           """
+       ).on("user_id" -> this.id).as(Group.simple *)
+      }
+      groups
   }
 
 
-
+  def delete={
+    val count = DB.withConnection{ implicit connection => 
+          SQL(
+            """ 
+              DELETE FROM users where id = {user_id}
+            """
+          ).on("user_id"  -> this.id).executeUpdate 
+      }
+      count
+  }
 }
 
 object User {
@@ -150,9 +186,11 @@ object User {
     }
 
 
-    def findByEmail(email: String):Optionn[User] ={
+    def findByEmail(email: String):Option[User] ={
+        println(email)
         DB.withConnection{ implicit connection =>
-        SQL("select * from users where email = {email}").on("email" -> email).as(User.simple.singleOpt)
+            SQL("select * from users where email = {email}").on("email" -> email).as(User.simple.singleOpt)
+        }
     }
 
     def insert(user: User) = {

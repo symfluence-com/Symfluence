@@ -6,9 +6,9 @@ import org.bson.types.ObjectId
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 
-case class Post(id: ObjectId = ObjectId.get,
+case class Post(id: String = ObjectId.get.toString,
                 text:Option[String],
-                image_id:Option[String],
+                imageId:Option[String],
                 latitude:Option[Double], 
                 longitude:Option[Double], 
                 userId:String,
@@ -25,8 +25,9 @@ case class Post(id: ObjectId = ObjectId.get,
 
   def toRawObject={
     val builder = MongoDBObject.newBuilder
+    builder += "_id" -> this.id
     builder += "text" -> this.text
-    builder += "image_id" -> this.image_id
+    builder += "image_id" -> this.imageId
     builder += "latitude" -> this.latitude
     builder += "longitude" -> this.longitude
     builder += "user_id" -> this.userId
@@ -46,10 +47,10 @@ case class Post(id: ObjectId = ObjectId.get,
 
 object Post{
   def postMapper(rawObject:DBObject):Post={
-    Post(new ObjectId(rawObject.getAs[String]("_id").get), rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
+    Post(rawObject.getAs[String]("_id").get, rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
       rawObject.getAs[Double]("latitude"), rawObject.getAs[Double]("longitude"), rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("group_id").get,
       rawObject.getAs[String]("main_post_id"), rawObject.getAs[List[String]]("comment_ids"),
-      rawObject.getAs[Int]("timestamp").get.toLong)
+      rawObject.getAs[Long]("timestamp").get.toLong)
   }
 
   def findAll:Option[List[Post]] = {
