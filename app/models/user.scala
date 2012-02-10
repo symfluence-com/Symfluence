@@ -108,6 +108,16 @@ case class User(
   }
 
 
+  def delete={
+    val count = DB.withConnection{ implicit connection => 
+      SQL(
+        """ 
+          DELETE FROM users where id = {user_id}
+        """
+      ).on("user_id"  -> this.id)
+  }
+
+
 
 }
 

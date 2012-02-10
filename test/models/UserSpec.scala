@@ -40,10 +40,22 @@ object UserSpec extends Specification {
 
     }
 
+    "can find user by email" in {
+      running(FakeApplication()){
+        val user = User.findByEmail("frank_awesomeness@gmail.com").get
+
+    }
+
     "can get all Posts by Users" in {
       running(FakeApplication()){
         val user = User.findById("4789200253f411e1b371040cced6719e")
         user.get.asInstanceOf[User].getPosts.get.length must equalTo(10)
+      }
+    }
+
+    "can delete user" {
+      running(FakeApplication()){
+        val user = User.findBy
       }
     }
 
