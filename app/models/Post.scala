@@ -13,8 +13,8 @@ case class Post(id: ObjectId = ObjectId.get,
                 longitude:Option[Double], 
                 userId:String,
                 groupId:String, 
-                mainPostId:Option[ObjectId],
-                commentIds:Option[List[ObjectId]], 
+                mainPostId:Option[String],
+                commentIds:Option[List[String]], 
                 timestamp:Long=System.currentTimeMillis) {
 
   def comments:List[Post]={
@@ -46,10 +46,10 @@ case class Post(id: ObjectId = ObjectId.get,
 
 object Post{
   def postMapper(rawObject:DBObject):Post={
-    Post(rawObject.getAs[ObjectId]("_id").get, rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
+    Post(new ObjectId(rawObject.getAs[String]("_id").get), rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
       rawObject.getAs[Double]("latitude"), rawObject.getAs[Double]("longitude"), rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("group_id").get,
-      rawObject.getAs[ObjectId]("main_post_id"), rawObject.getAs[List[ObjectId]]("comment_ids"),
-      rawObject.getAs[Long]("timestamp").get)
+      rawObject.getAs[String]("main_post_id"), rawObject.getAs[List[String]]("comment_ids"),
+      rawObject.getAs[Int]("timestamp").get.toLong)
   }
 
   def findAll:Option[List[Post]] = {

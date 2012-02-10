@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings, ExtendedDefaultRules #-}
 import Data.UUID
 import System.UUID.V1
 import Control.Monad
@@ -66,7 +67,7 @@ generateGroup count = do
 
 generatePost :: String -> String -> Int ->  IO Post
 generatePost groupId userId count= do
-  postId <- generateUUID
+  postId <- generateObjectId
   imageId <- generateObjectId
   latitude <- randomRIO (-90.0, 90.0)
   longitude <- randomRIO (-180.0, 180)

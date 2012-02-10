@@ -12,13 +12,13 @@ object UserSpec extends Specification {
     "be retrieved by id" in {
       running(FakeApplication()) {
 
-        val user = User.findById("67326c74500c11e1a2ce040cced6719e").get
-        user.email must equalTo("frank67326c74500c11e1a2ce040cced6719e@email.com")
-        user.name must equalTo("Frank67326c74500c11e1a2ce040cced6719e")
-        user.profilePicId must equalTo("4f2e9d5735e8121735000051")
-        user.points must equalTo(11)
-        user.credits must equalTo(50)
-        user.fbToken must equalTo("67326c9c500c11e1a2ce040cced6719e")
+        val user = User.findById("47891d6453f411e1b371040cced6719e").get
+        user.email must equalTo("frank47891d6453f411e1b371040cced6719e@email.com")
+        user.name must equalTo("Frank47891d6453f411e1b371040cced6719e")
+        user.profilePicId must equalTo("4f352adb2d26dd38be000015")
+        user.points must equalTo(62)
+        user.credits must equalTo(95)
+        user.fbToken must equalTo("47891d8c53f411e1b371040cced6719e")
 
       }
 
@@ -42,8 +42,8 @@ object UserSpec extends Specification {
 
     "can get all Posts by Users" in {
       running(FakeApplication()){
-        val user = User.findById("67326e22500c11e1a2ce040cced6719e")
-        user.get.asInstanceOf[User].getPosts.get.size must equalTo(10)
+        val user = User.findById("4789200253f411e1b371040cced6719e")
+        user.get.asInstanceOf[User].getPosts.get.length must equalTo(10)
       }
     }
 

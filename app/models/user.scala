@@ -36,7 +36,8 @@ case class User(
       posts
     }
     else {
-      val query = MongoDBObject("user_id" -> this.id)
+      println("this id "+this.id)
+      val query = MongoDBObject("user_id" -> this.id.toString)
       posts =Some(Mongo.posts.find(query).toList.map(rawObject => Post.postMapper(rawObject)))
       posts
     }
