@@ -85,19 +85,34 @@ object UserSpec extends Specification {
 
     "can follow User" in {
       running(FakeApplication()){
-        true
+        val user1 = User.findById("4789200253f411e1b371040cced6719e").get
+        val user2 = User.findById("47891fc653f411e1b371040cced6719e").get
+        user1.followUser(user2)
+        user1.getFollowers.get.length must equalTo(1);
       }
     }
 
     "can get Followers" in {
       running(FakeApplication()){
-        true
+        val user = User.findById("4789200253f411e1b371040cced6719e").get
+        user.getFollowers.get.length must equalTo(1);
+      }
+    }
+
+    "can delete Followers" in {
+      running(FakeApplication()){
+        val user1 = User.findById("4789200253f411e1b371040cced6719e").get
+        val user2 = User.findById("47891fc653f411e1b371040cced6719e").get
+        user1.unfollowUser(user2)
+        user1.getFollowers.get.length must equalTo(0);
       }
     }
 
     "can get group" in {
       running(FakeApplication()){
-        true
+        val user1 = User.findById("4789200253f411e1b371040cced6719e").get
+        user1.getGroups.size must equalTo(1);
+
       }
     }
 

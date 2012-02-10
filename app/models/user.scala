@@ -83,10 +83,21 @@ case class User(
   }
 
   def followUser(user:User){
-    val count = DB.withConnection{ implicit connection =>
-      SQL(
-        "INSERT INTO users_followers(user_id, follower_id) VALUES({user_id}, {follower_id})"
-      ).on("user_id" -> this.id, "follower_id" -> user.id).executeUpdate()
+    val count = if(this.getFollowers.isDefined && this.getFollowers.get.filter(follower =>  follower.id == user.id).isEmpty){
+      if (followers.isDefined){
+        followers = Some(user::followers.get)
+      }
+      else{
+        followers = Some(user::Nil)
+      }
+      DB.withConnection{ implicit connection =>
+          SQL(
+          "INSERT INTO users_followers(user_id, follower_id, created_at, updated_at) VALUES({user_id}, {follower_id},{created_at}, {updated_at})"
+        ).on("user_id" -> this.id, "follower_id" -> user.id, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
+      }
+    }
+    else{
+      1
     }
     if(count > 0){
       true
@@ -97,6 +108,23 @@ case class User(
 
   }
 
+  def unfollowUser(user:User){
+    val count = DB.withConnection{ implicit connection =>
+      SQL(
+        "DELETE FROM users_followers WHERE user_id={user_id} and  follower_id={follower_id}"
+      ).on("user_id" -> this.id, "follower_id" -> user.id).executeUpdate()
+    }
+    if(count > 0){
+       if (followers.isDefined){
+        followers = Some(followers.get.filterNot(follower => follower.id ==user.id))
+      }
+      true
+    }
+    else{
+      false
+    }
+
+  }
   def getFollowers:Option[List[User]]={
     if (followers.isDefined){
       followers
@@ -106,7 +134,7 @@ case class User(
         SQL(
           """
           SELECT users.* FROM users, users_followers WHERE users_followers.user_id = {user_id}
-          AND users.id  = users_followers.follower_id"
+          AND users.id  = users_followers.follower_id
           """
         ).on("user_id" -> this.id).as(User.simple *)
 
