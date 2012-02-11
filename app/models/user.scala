@@ -149,14 +149,14 @@ case class User(
     }
   }
 
-  def addGroup(group:Group){
+  def joinGroup(group:Group){
     val count = DB.withConnection{ implicit connection =>
       SQL(
         """
           INSERT INTO users_groups(user_id, group_id, created_at, updated_at) 
           VALUES({user_id}, {group_id}, {created_at}, {updated_at})
         """
-    ).on("user_id" -> this.id, "group_id" -> group.id, "created_at" -> DateTime.now(DateTimeZone.UTC), "updated_at" -> DateTime.now(DateTimeZone.UTC)).executeUpdate()
+    ).on("user_id" -> this.id, "group_id" -> group.id, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
     }
     if(count > 0){
         true

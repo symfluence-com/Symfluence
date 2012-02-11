@@ -28,6 +28,7 @@ case class Group(
           """
         ).on("group_id" -> this.id).as(User.simple *)
       })
+      users
     }
 
   }
@@ -65,10 +66,10 @@ object Group{
         }
     }
 
-  
+
     def findAll(): Seq[Group] = {
         DB.withConnection { implicit connection =>
-            SQL("select * from users").as(Group.simple *) 
+            SQL("select * from groups").as(Group.simple *) 
         }
     }
 
