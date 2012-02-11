@@ -14,6 +14,7 @@ drop table if exists users;
 CREATE TABLE `badges` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
   `badge_pic` varchar(32) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
@@ -24,6 +25,7 @@ CREATE TABLE `badges` (
 CREATE TABLE `brands` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
+  `profile_pic_id` varchar(255) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)

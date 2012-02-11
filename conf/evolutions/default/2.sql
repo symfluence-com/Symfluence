@@ -1,6 +1,19 @@
 # --- Sample dataset
 
 # --- !Ups
+INSERT INTO `badges` (`id`, `name`, `description`, `badge_pic`, `created_at`, `updated_at`)
+VALUES
+	(1, 'Badge_Name_1', 'description1', 'Badge_Pic_1', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(2, 'Badge_Name_2', 'description2', 'Badge_Pic_2', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(3, 'Badge_Name_3', 'description3', 'Badge_Pic_3', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(4, 'Badge_Name_4', 'description4', 'Badge_Pic_4', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(5, 'Badge_Name_5', 'description5', 'Badge_Pic_5', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(6, 'Badge_Name_6', 'description6', 'Badge_Pic_6', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(7, 'Badge_Name_7', 'description7', 'Badge_Pic_7', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(8, 'Badge_Name_8', 'description8', 'Badge_Pic_8', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(9, 'Badge_Name_9', 'description9', 'Badge_Pic_9', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
+	(10, 'Badge_Name_10', 'description10', 'Badge_Pic_10', '2012-02-10 14:34:03', '2012-02-10 14:34:03');
+
 
 INSERT INTO `groups` (`id`, `name`, `profile_pic_id`, `description`, `created_at`, `updated_at`)
 VALUES

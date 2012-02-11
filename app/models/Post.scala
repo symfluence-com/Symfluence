@@ -49,6 +49,10 @@ case class Post(id: String = ObjectId.get.toString,
     builder.result
   }
 
+  def delete{
+    1
+  }
+
 
 
 }
@@ -84,6 +88,9 @@ object Post{
       None
     }
   }
+
+  
+
 }
 
 // vim: set ts=4 sw=4 et:
