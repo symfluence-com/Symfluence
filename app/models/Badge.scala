@@ -13,7 +13,7 @@ import java.util.UUID
 
 
 case class Badge(
-  id: Pk[String] = Id(UUID.randomUUID.toString.replace("-", "")),
+  id: Pk[Long] = NotAssigned,
   name: String, profilePicId: String, description: String,    
   createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
   updatedAt: DateTime = DateTime.now(DateTimeZone.UTC)
@@ -28,8 +28,8 @@ case class Badge(
       users = Some(DB.withConnection{ implicit connection => 
         SQL(
           """
-          SELECT users.* FROM users, users_Badges WHERE users_Badges.Badge_id = {Badge_id} AND
-          users.id = users_Badges.user_id
+          SELECT users.* FROM users, users_badges WHERE users_Badges.badge_id = {Badge_id} AND
+          users.id = users_badges.user_id
           """
         ).on("Badge_id" -> this.id).as(User.simple *)
       })
@@ -53,23 +53,23 @@ case class Badge(
 
 object Badge{
     val simple = {
-        get[Pk[String]]("Badges.id") ~
-        get[String]("Badges.name") ~
-        get[String]("Badges.profile_pic_id") ~
-        get[String]("Badges.description") map {
+        get[Pk[Long]]("badges.id") ~
+        get[String]("badges.name") ~
+        get[String]("badges.profile_pic_id") ~
+        get[String]("badges.description") map {
             case id  ~ name ~ profilePicId ~ description => Badge(id, name, profilePicId, description)
         }
     }
 
-    def findById(id: String): Option[Badge] = {
+    def findById(id: Int): Option[Badge] = {
         DB.withConnection { implicit connection =>
-        SQL("select * from Badges where id = {id}").on("id" -> id).as(Badge.simple.singleOpt)
+        SQL("select * from badges where id = {id}").on("id" -> id).as(Badge.simple.singleOpt)
         }
     }
 
     def findByName(name: String): Option[Badge] = {
         DB.withConnection { implicit connection =>
-        SQL("select * from Badges where name = {name}").on("name" -> name).as(Badge.simple.singleOpt)
+        SQL("select * from badges where name = {name}").on("name" -> name).as(Badge.simple.singleOpt)
         }
     }
 
@@ -77,7 +77,7 @@ object Badge{
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                insert into Badges(id, name, profile_pic_id, description) 
+                insert into badges(id, name, profile_pic_id, description) 
                 values ({id}, {name}, {profile_pic_id}, {description})
                 """
             ).on(
@@ -92,7 +92,7 @@ object Badge{
   
     def findAll(): Seq[Badge] = {
         DB.withConnection { implicit connection =>
-            SQL("select * from Badges").as(Badge.simple *) 
+            SQL("select * from badges").as(Badge.simple *) 
         }
     }
 

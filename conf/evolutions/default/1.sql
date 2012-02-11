@@ -17,7 +17,7 @@ CREATE TABLE `badges` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
-  `badge_pic` varchar(32) DEFAULT NULL,
+  `profile_pic_id` varchar(32) DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -68,7 +68,7 @@ CREATE TABLE `users` (
   `gender` char(1) DEFAULT NULL,
   `date_of_birth` date DEFAULT NULL,
   `occupation` varchar(255) DEFAULT NULL,
-  `income` float DEFAULT NULL,
+  `income` double DEFAULT NULL,
   `points` int(11) DEFAULT '0',
   `credits` int(11) DEFAULT '0',
   `fb_token` varchar(255) DEFAULT NULL,

@@ -13,29 +13,15 @@ import java.util.UUID
 
 
 case class Brand(
-  id: Pk[String] = Id(UUID.randomUUID.toString.replace("-", "")),
-  name: String, profilePicId: String, description: String,    
+  id: Pk[Long] = NotAssigned,
+  name: String, profilePicId: String,    
   createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
   updatedAt: DateTime = DateTime.now(DateTimeZone.UTC)
 ){
   private var users:Option[List[User]] = None
 
   def getUsers={
-    if (users.isDefined){
-      users
-    }
-    else{
-      users = Some(DB.withConnection{ implicit connection => 
-        SQL(
-          """
-          SELECT users.* FROM users, users_Brands WHERE users_Brands.Brand_id = {Brand_id} AND
-          users.id = users_Brands.user_id
-          """
-        ).on("Brand_id" -> this.id).as(User.simple *)
-      })
-      users
-    }
-
+    1  
   }
 
   def delete={
@@ -53,11 +39,11 @@ case class Brand(
 
 object Brand{
     val simple = {
-        get[Pk[String]]("Brands.id") ~
+        get[Pk[Long]]("Brands.id") ~
         get[String]("Brands.name") ~
-        get[String]("Brands.profile_pic_id") ~
-        get[String]("Brands.description") map {
-            case id  ~ name ~ profilePicId ~ description => Brand(id, name, profilePicId, description)
+        get[String]("Brands.profile_pic_id") map {
+            case id  ~ name ~ profilePicId 
+             => Brand(id, name, profilePicId)
         }
     }
 
@@ -77,14 +63,13 @@ object Brand{
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                insert into Brands(id, name, profile_pic_id, description) 
-                values ({id}, {name}, {profile_pic_id}, {description})
+                insert into Brands(id, name, profile_pic_id) 
+                values ({id}, {name}, {profile_pic_id})
                 """
             ).on(
                 "id" -> Brand.id, 
                 "name"-> Brand.name, 
-                "profile_pic_id" -> Brand.profilePicId,
-                "description" -> Brand.description
+                "profile_pic_id" -> Brand.profilePicId
             ).executeUpdate()
         }
     }

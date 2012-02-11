@@ -12,7 +12,7 @@ object BadgeSpec extends Specification {
     "be retrieved by id" in {
       running(FakeApplication()) {
 
-        val badge = Badge.findById("1").get
+        val badge = Badge.findById(1).get
         badge.name must equalTo("Badge_Name_1")
         badge.profilePicId must equalTo("Badge_Pic_1")
       }
@@ -32,7 +32,7 @@ object BadgeSpec extends Specification {
     "all be retrieved" in{
       running(FakeApplication()) {
         val  badges = Badge.findAll
-        badges.size must equalTo(14)
+        badges.size must equalTo(10)
       }
 
     }
@@ -49,8 +49,8 @@ object BadgeSpec extends Specification {
 
     "can get all Users of Badge" in {
         running(FakeApplication()){
-          val badge = Badge.findById("1")
-          badge.get.asInstanceOf[Badge].getUsers.get.length must equalTo(10)
+          val badge = Badge.findById(1)
+          badge.get.asInstanceOf[Badge].getUsers.get.length must equalTo(3)
         }
     }
 

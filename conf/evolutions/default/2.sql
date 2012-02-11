@@ -1,7 +1,7 @@
 # --- Sample dataset
 
 # --- !Ups
-INSERT INTO `badges` (`id`, `name`, `description`, `badge_pic`, `created_at`, `updated_at`)
+INSERT INTO `badges` (`id`, `name`, `description`, `profile_pic_id`, `created_at`, `updated_at`)
 VALUES
 	(1, 'Badge_Name_1', 'description1', 'Badge_Pic_1', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(2, 'Badge_Name_2', 'description2', 'Badge_Pic_2', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
@@ -14,6 +14,11 @@ VALUES
 	(9, 'Badge_Name_9', 'description9', 'Badge_Pic_9', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(10, 'Badge_Name_10', 'description10', 'Badge_Pic_10', '2012-02-10 14:34:03', '2012-02-10 14:34:03');
 
+INSERT INTO `brands` (`id`, `name`, `profile_pic_id`, `created_at`, `updated_at`)
+VALUES
+	(1, 'Brand_Name_Temp1', 'fdsjklsf', NULL, NULL),
+	(2, 'Brand_Name_Temp2', 'fdsjklsf22', NULL, NULL),
+	(3, 'Brand_Name_Temp3', 'fdsjklsf223', NULL, NULL);
 
 INSERT INTO `groups` (`id`, `name`, `profile_pic_id`, `description`, `created_at`, `updated_at`)
 VALUES
@@ -68,6 +73,13 @@ VALUES
 	(28, '4789200253f411e1b371040cced6719e', '4f352adb2d26dd38be000045', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(29, '4789200253f411e1b371040cced6719e', '4f352adb2d26dd38be000049', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(30, '4789200253f411e1b371040cced6719e', '4f352adb2d26dd38be00004d', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03');
+
+INSERT INTO `users_badges` (`user_id`, `badge_id`, `created_at`, `updated_at`)
+VALUES
+	('47891f2653f411e1b371040cced6719e', 1, NULL, NULL),
+	('47891ee053f411e1b371040cced6719e', 1, NULL, NULL),
+	('47891d6453f411e1b371040cced6719e', 1, NULL, NULL);
+
   
 #--- !Downs
 delete from users_posts;
