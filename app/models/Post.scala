@@ -15,6 +15,7 @@ case class Post(id: String = ObjectId.get.toString,
                 groupId:String, 
                 mainPostId:Option[String],
                 commentIds:Option[List[String]], 
+                tags:Option[List[String]],
                 timestamp:Long=System.currentTimeMillis) {
 
   def comments:List[Post]={
@@ -34,13 +35,20 @@ case class Post(id: String = ObjectId.get.toString,
     builder += "group_id" -> this.groupId
     val commentListBuilder =  MongoDBList.newBuilder
     this.commentIds.getOrElse(List()).foreach{id => 
-    commentListBuilder +=  id
+        commentListBuilder +=  id
     }
+    val tagsListBuilder = MongoDBList.newBuilder
+    this.tags.getOrElse(List()).foreach(tag =>{
+            tagsListBuilder += tag
+        })
+
     builder += "main_this_id" -> this.mainPostId
     builder += "comment_ids" -> commentListBuilder.result
+    builder += "tags" -> tagsListBuilder.result
     builder += "timestamp"  -> this.timestamp
     builder.result
   }
+
 
 
 }
@@ -50,7 +58,7 @@ object Post{
     Post(rawObject.getAs[String]("_id").get, rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
       rawObject.getAs[Double]("latitude"), rawObject.getAs[Double]("longitude"), rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("group_id").get,
       rawObject.getAs[String]("main_post_id"), rawObject.getAs[List[String]]("comment_ids"),
-      rawObject.getAs[Long]("timestamp").get.toLong)
+      rawObject.getAs[List[String]]("tags"), rawObject.getAs[Long]("timestamp").get.toLong)
   }
 
   def findAll:Option[List[Post]] = {

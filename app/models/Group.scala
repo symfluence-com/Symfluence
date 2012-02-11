@@ -89,7 +89,7 @@ object Group{
         }
     }
 
-  
+
     def findAll(): Seq[Group] = {
         DB.withConnection { implicit connection =>
             SQL("select * from groups").as(Group.simple *) 
