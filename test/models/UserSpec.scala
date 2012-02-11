@@ -5,6 +5,8 @@ import org.specs2.mutable._
 import play.api.test._
 import play.api.test.Helpers._
 
+import java.util.Date
+
 object UserSpec extends Specification {
   import models._
 
@@ -14,7 +16,7 @@ object UserSpec extends Specification {
 
         val user = User.findById("47891d6453f411e1b371040cced6719e").get
         user.email must equalTo("frank47891d6453f411e1b371040cced6719e@email.com")
-        user.name must equalTo("Frank47891d6453f411e1b371040cced6719e")
+        user.firstName must equalTo("Frank47891d6453f411e1b371040cced6719e")
         user.profilePicId must equalTo("4f352adb2d26dd38be000015")
         user.points must equalTo(62)
         user.credits must equalTo(95)
@@ -34,7 +36,21 @@ object UserSpec extends Specification {
 
     "can be inserted" in {
         running(FakeApplication()) {
-          val user = User(email="frank_awesomeness@gmail.com", name="Frank Awesomeness", profilePicId="frankAwesomeness", points=100, credits=100, fbToken="fdjsklfjds")
+          val user = 
+            User( email="frank_awesomeness@gmail.com", 
+                  userName = "frank",
+                  firstName= "Frank Awesomeness", 
+                  lastName= "Lee",
+                  profilePicId = "frankAwesomeness", 
+                  mailingAddress = Some("singapore"),
+                  gender = Some("M"),
+                  dateOfBirth = Some(new Date()),
+                  occupation = Some("Boss"),
+                  income = Some(10000000.0),
+                  points=100, 
+                  credits=100, 
+                  fbToken="fdjsklfjds"
+            )
           User.insert(user) must equalTo(1)
         }
 
@@ -54,14 +70,14 @@ object UserSpec extends Specification {
         val post = Post(text=Some("Test Post"), imageId=None, latitude=Some(0.001), longitude=Some(0.002),
           userId= user.id.toString, groupId = user.getGroups.head.id.toString, mainPostId= None, commentIds=None)
         user.post(post)
-        user.asInstanceOf[User].getPosts.get.length must equalTo(4)
+        user.asInstanceOf[User].getPosts.get.length must equalTo(1)
       }
     }
 
     "can get all Posts by Users" in {
       running(FakeApplication()){
         val user = User.findById("4789200253f411e1b371040cced6719e")
-        user.get.asInstanceOf[User].getPosts.get.length must equalTo(4)
+        user.get.asInstanceOf[User].getPosts.get.length must equalTo(1)
       }
     }
 
@@ -70,7 +86,7 @@ object UserSpec extends Specification {
         val user = User.findById("4789200253f411e1b371040cced6719e").get
         val post = user.getPosts.get.head
         user.deletePost(post)
-        user.getPosts.get.length must equalTo(3)
+        user.getPosts.get.length must equalTo(0)
       }
    }
 

@@ -21,8 +21,15 @@ import java.util.Date
 case class User(
     id: Pk[String]= Id(UUID.randomUUID.toString.replace("-", "")), 
     email: String, 
-    name: String, 
+    userName: String,
+    firstName: String, 
+    lastName: String,
     profilePicId: String, 
+    mailingAddress: Option[String],
+    gender: Option[String],
+    dateOfBirth: Option[Date],
+    occupation:Option[String],
+    income:Option[Double],
     points: Int, 
     credits: Int, 
     fbToken: String,
@@ -37,7 +44,6 @@ case class User(
       posts
     }
     else {
-      println("this id "+this.id)
       val query = MongoDBObject("user_id" -> this.id.toString)
       posts =Some(Mongo.posts.find(query).toList.map(rawObject => Post.postMapper(rawObject)))
       posts
@@ -190,14 +196,22 @@ object User {
     val simple = {
         get[Pk[String]]("users.id") ~
         get[String]("users.email") ~
-        get[String]("users.name") ~
+        get[String]("users.username") ~
+        get[String]("users.first_name") ~
+        get[String]("users.last_name") ~
         get[String]("users.profile_pic_id") ~
+        get[Option[String]]("users.mailing_address") ~
+        get[Option[String]]("users.gender") ~
+        get[Option[Date]]("date_Of_birth") ~
+        get[Option[String]]("occupation") ~
+        get[Option[Double]]("income") ~
         get[Int]("users.points") ~
         get[Int]("users.credits") ~
         get[String]("users.fb_token") ~
         get[Date]("users.created_at") ~
         get[Date]("users.updated_at") map {
-            case id ~ email ~ name ~ profilePicId ~ points ~ credits ~ fbToken ~ createdAt ~ updatedAt=> User(id, email, name, profilePicId, points, credits, fbToken, new DateTime(createdAt), new DateTime(updatedAt))
+            case id ~ email ~ userName ~ firstName ~ lastName ~ profilePicId ~ mailingAddress ~ gender ~ dateOfBirth ~ occupation ~  income ~ points ~ credits ~ fbToken ~ createdAt ~ updatedAt => 
+            User(id, email, userName, firstName, lastName, profilePicId, mailingAddress, gender, dateOfBirth, occupation, income, points, credits, fbToken, new DateTime(createdAt), new DateTime(updatedAt))
         }
     }
 
@@ -215,7 +229,6 @@ object User {
 
 
     def findByEmail(email: String):Option[User] ={
-        println(email)
         DB.withConnection{ implicit connection =>
             SQL("select * from users where email = {email}").on("email" -> email).as(User.simple.singleOpt)
         }
@@ -225,14 +238,53 @@ object User {
         DB.withConnection { implicit connection =>
             SQL(
                 """
-                INSERT INTO users(id, email, name, profile_pic_id, points, credits, fb_token, created_at, updated_at) 
-                VALUES ({id}, {email}, {name}, {profile_pic_id}, {points}, {credits}, {fb_token}, {created_at}, {updated_at})
+                INSERT INTO users(
+                  id, 
+                  email, 
+                  username,
+                  first_name,
+                  last_name,
+                  profile_pic_id,
+                  mailing_address,
+                  gender,
+                  date_of_birth,
+                  occupation,
+                  income,
+                  points, 
+                  credits, 
+                  fb_token, 
+                  created_at, 
+                  updated_at) 
+                VALUES (
+                  {id}, 
+                  {email}, 
+                  {user_name},
+                  {first_name},
+                  {last_name},
+                  {profile_pic_id},
+                  {mailing_address},
+                  {gender},
+                  {date_of_birth},
+                  {occupation},
+                  {income},
+                  {points},
+                  {credits},
+                  {fb_token},
+                  {created_at},
+                  {updated_at})
                 """
             ).on(
-                "id" -> user.id, 
-                "email" -> user.email, 
-                "name"-> user.name, 
+                "id" -> user.id,
+                "email" -> user.email,
+                "user_name" -> user.userName,
+                "first_name" -> user.firstName,
+                "last_name"  -> user.lastName,
                 "profile_pic_id" -> user.profilePicId,
+                "mailing_address" -> user.mailingAddress,
+                "gender" -> user.gender,
+                "date_of_birth" -> user.dateOfBirth,
+                "occupation" -> user.occupation,
+                "income" -> user.income,
                 "points" -> user.points,
                 "credits" -> user.credits,
                 "fb_token" -> user.fbToken,
