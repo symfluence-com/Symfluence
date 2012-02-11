@@ -1,5 +1,8 @@
 package models;
 
+import org.joda.time._
+import org.joda.time.format._
+
 import play.api.db._
 import play.api.Play.current
 
@@ -10,8 +13,10 @@ import java.util.UUID
 
 
 case class Group(
-  id: Pk[String] = Id(UUID.randomUUID.toString),
-  name: String, profilePicId: String, description: String
+  id: Pk[String] = Id(UUID.randomUUID.toString.replace("-", "")),
+  name: String, profilePicId: String, description: String,    
+  createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
+  updatedAt: DateTime = DateTime.now(DateTimeZone.UTC)
 ){
   private var users:Option[List[User]] = None
 
@@ -28,9 +33,22 @@ case class Group(
           """
         ).on("group_id" -> this.id).as(User.simple *)
       })
+      users
     }
 
   }
+
+  def delete={
+    val count = DB.withConnection{ implicit connection => 
+        SQL(
+          """ 
+            DELETE FROM groups where id = {group_id}
+          """
+        ).on("group_id"  -> this.id).executeUpdate 
+    }
+  count
+  }
+
 }
 
 object Group{
@@ -46,6 +64,12 @@ object Group{
     def findById(id: String): Option[Group] = {
         DB.withConnection { implicit connection =>
         SQL("select * from groups where id = {id}").on("id" -> id).as(Group.simple.singleOpt)
+        }
+    }
+
+    def findByName(name: String): Option[Group] = {
+        DB.withConnection { implicit connection =>
+        SQL("select * from groups where name = {name}").on("name" -> name).as(Group.simple.singleOpt)
         }
     }
 
@@ -68,9 +92,11 @@ object Group{
   
     def findAll(): Seq[Group] = {
         DB.withConnection { implicit connection =>
-            SQL("select * from users").as(Group.simple *) 
+            SQL("select * from groups").as(Group.simple *) 
         }
     }
+
+
 
 }
 
