@@ -9,8 +9,7 @@ import com.mongodb.casbah.commons.conversions.scala._
 case class Post(id: String = ObjectId.get.toString,
                 text:Option[String],
                 imageId:Option[String],
-                latitude:Option[Double], 
-                longitude:Option[Double], 
+                coordinates:Option[Tuple2[Double, Double]],
                 userId:String,
                 groupId:String, 
                 mainPostId:Option[String],
@@ -29,8 +28,15 @@ case class Post(id: String = ObjectId.get.toString,
     builder += "_id" -> this.id
     builder += "text" -> this.text
     builder += "image_id" -> this.imageId
-    builder += "latitude" -> this.latitude
-    builder += "longitude" -> this.longitude
+    if(this.coordinates.isDefined){
+      val coordinateListBuilder = MongoDBList.newBuilder
+      coordinateListBuilder += this.coordinates.get._1
+      coordinateListBuilder += this.coordinates.get._2
+      builder += "coordinates" -> coordinateListBuilder.result
+    }
+    else{
+        builder += "coordinates" -> None
+    }
     builder += "user_id" -> this.userId
     builder += "group_id" -> this.groupId
     val commentListBuilder =  MongoDBList.newBuilder
@@ -44,9 +50,6 @@ case class Post(id: String = ObjectId.get.toString,
     else{
         builder += "commentIds" -> None
     }
-    // this.commentIds.getOrElse(List()).foreach{id => 
-    //     commentListBuilder +=  id
-    // }
     if(this.tags.isDefined){
         val tagsListBuilder = MongoDBList.newBuilder
         this.tags.get.foreach(tag =>{
@@ -59,24 +62,31 @@ case class Post(id: String = ObjectId.get.toString,
     }
 
     builder += "main_this_id" -> this.mainPostId
-    // builder += "comment_ids" -> commentListBuilder.result
-    // builder += "tags" -> tagsListBuilder.result
     builder += "timestamp"  -> this.timestamp
     builder.result
   }
 
-  def delete{
-    1
-  }
 
 
 
 }
 
 object Post{
+
+  Mongo.posts.ensureIndex(MongoDBObject("coordinates" -> "2d"), "locationIndex", false)
+  Mongo.posts.ensureIndex(MongoDBObject("timestamp" -> 1, "user_id" -> 1, "group_id" -> 1), "PostIndex", true)
+
   def postMapper(rawObject:DBObject):Post={
+    val coordinatesList = rawObject.getAs[BasicDBList]("coordinates")
+    val coordinates = if (coordinatesList.isDefined){
+      Some(coordinatesList.get.get(0).asInstanceOf[Double],
+          coordinatesList.get.get(1).asInstanceOf[Double])
+    }
+    else{
+      None
+    }
     Post(rawObject.getAs[String]("_id").get, rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
-      rawObject.getAs[Double]("latitude"), rawObject.getAs[Double]("longitude"), rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("group_id").get,
+      coordinates, rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("group_id").get,
       rawObject.getAs[String]("main_post_id"), rawObject.getAs[List[String]]("comment_ids"),
       rawObject.getAs[List[String]]("tags"), rawObject.getAs[Long]("timestamp").get.toLong)
   }

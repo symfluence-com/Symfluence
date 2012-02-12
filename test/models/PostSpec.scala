@@ -16,8 +16,7 @@ object PostSpec extends Specification {
     user.joinGroup(group)
     val post = Post(text=Some("Test Post"),
       imageId=None, 
-      latitude=Some(0.001),
-      longitude=Some(0.002),
+      coordinates=Some((0.001, 0.002)),
       userId= user.id.toString,
       groupId =group.id.toString,
       mainPostId= None,

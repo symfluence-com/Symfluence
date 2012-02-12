@@ -77,7 +77,7 @@ object UserSpec extends Specification {
     "can Post" in {
       running(FakeApplication()){
         val user = User.findById("4789200253f411e1b371040cced6719e").get
-        val post = Post(text=Some("Test Post"), imageId=None, latitude=Some(0.001), longitude=Some(0.002),
+        val post = Post(text=Some("Test Post"), imageId=None, coordinates=Some(0.001, 0.002),
           userId= user.id.toString, groupId = user.getGroups.head.id.toString, mainPostId= None, commentIds=None, tags=None)
         user.post(post)
         user.asInstanceOf[User].getPosts.get.length must equalTo(1)
@@ -144,7 +144,6 @@ object UserSpec extends Specification {
     "can join group" in {
       running(FakeApplication()){
         val testFunction = (user:User, group:Group) => {
-          println(user.id)
           group.getUsers.size must equalTo(1)
           user.getGroups.size must equalTo(2)
         }
