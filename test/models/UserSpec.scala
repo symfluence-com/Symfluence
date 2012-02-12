@@ -1,6 +1,7 @@
 package test.models.UserSpec
 
 import org.specs2.mutable._
+import org.specs2.matcher.MatchResult
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -9,6 +10,15 @@ import java.util.Date
 
 object UserSpec extends Specification {
   import models._
+
+  def withGroup[A](testFunction:(User, Group)=> MatchResult[A])={
+    val user = User.findAll.head
+    val group = Group.findAll.head
+    user.joinGroup(group)
+    val result =testFunction(user, group)
+    user.leaveGroup(group)
+    result
+  }
 
   "User" should {
     "be retrieved by id" in {
@@ -128,23 +138,19 @@ object UserSpec extends Specification {
       running(FakeApplication()){
         val user1 = User.findById("4789200253f411e1b371040cced6719e").get
         user1.getGroups.size must equalTo(1);
-
       }
     }
 
     "can join group" in {
       running(FakeApplication()){
-        val user1 = User.findById("4789200253f411e1b371040cced6719e").get
-        val group = Group.findAll.head
-        val oldGroupSize = group.getUsers.get.size
-        val oldUser1GroupSize = user1.getGroups.size
-        user1.joinGroup(group)
-        group.getUsers.size must equalTo(oldGroupSize +1)
-        user1.getGroups.size must equalTo(oldUser1GroupSize +1)
+        val testFunction = (user:User, group:Group) => {
+          println(user.id)
+          group.getUsers.size must equalTo(1)
+          user.getGroups.size must equalTo(2)
+        }
+        withGroup(testFunction)
       }
     }
-
-
   }
 
 }

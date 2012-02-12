@@ -34,17 +34,33 @@ case class Post(id: String = ObjectId.get.toString,
     builder += "user_id" -> this.userId
     builder += "group_id" -> this.groupId
     val commentListBuilder =  MongoDBList.newBuilder
-    this.commentIds.getOrElse(List()).foreach{id => 
-        commentListBuilder +=  id
-    }
-    val tagsListBuilder = MongoDBList.newBuilder
-    this.tags.getOrElse(List()).foreach(tag =>{
-            tagsListBuilder += tag
+    if(this.commentIds.isDefined){
+        val commentListBuilder =  MongoDBList.newBuilder
+        this.commentIds.get.foreach(id => { 
+            commentListBuilder += id
         })
+        builder += "commentIds" -> commentListBuilder.result
+    }
+    else{
+        builder += "commentIds" -> None
+    }
+    // this.commentIds.getOrElse(List()).foreach{id => 
+    //     commentListBuilder +=  id
+    // }
+    if(this.tags.isDefined){
+        val tagsListBuilder = MongoDBList.newBuilder
+        this.tags.get.foreach(tag =>{
+                tagsListBuilder += tag
+            })
+        builder += "tags" -> tagsListBuilder.result
+    }
+    else{
+      builder += "tags" -> None
+    }
 
     builder += "main_this_id" -> this.mainPostId
-    builder += "comment_ids" -> commentListBuilder.result
-    builder += "tags" -> tagsListBuilder.result
+    // builder += "comment_ids" -> commentListBuilder.result
+    // builder += "tags" -> tagsListBuilder.result
     builder += "timestamp"  -> this.timestamp
     builder.result
   }
@@ -69,27 +85,24 @@ object Post{
     Some(Mongo.posts.find.toList.map(rawObject => Post.postMapper(rawObject)))
   }
 
-  def findPostInGroup(group:Group) ={
+  def findPostsInGroup(group:Group) ={
     val posts = Some(Mongo.posts.find(MongoDBObject("group_id" -> group.id)).toList.map(rawObject=>
       Post.postMapper(rawObject)))
+    posts
 
   }
 
   def findById(id:String):Option[Post]={
-    findById(new ObjectId(id))
-  }
-
-  def findById(id:ObjectId):Option[Post]={
     val rawObject = Mongo.posts.findOne(MongoDBObject("_id" -> id))
     if (rawObject.isDefined){
-      Some(Post.postMapper(rawObject.get))
+        Some(Post.postMapper(rawObject.get))
     }
     else{
-      None
+        None
     }
+
   }
 
-  
 
 }
 

@@ -1,6 +1,7 @@
 package test.models.PostSpec
 
 import org.specs2.mutable._
+import org.specs2.matcher.MatchResult
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -8,56 +9,59 @@ import play.api.test.Helpers._
 object PostSpec extends Specification {
   import models._
 
+
+  def withPost[A](testFunction:(User, Post, Group)=> MatchResult[A])={
+    val user = User.findAll.head
+    val group = Group.findAll.head
+    user.joinGroup(group)
+    val post = Post(text=Some("Test Post"),
+      imageId=None, 
+      latitude=Some(0.001),
+      longitude=Some(0.002),
+      userId= user.id.toString,
+      groupId =group.id.toString,
+      mainPostId= None,
+      commentIds=None,
+      tags=None)
+    user.post(post)
+    val result =testFunction(user, post, group)
+    user.deletePost(post)
+    result
+  }
+
+
   "Post" should {
     "be retrieved by id" in {
       running(FakeApplication()) {
-           val user = User.findAll.head
-           val post = Post(text=Some("Test Post"), imageId=None, latitude=Some(0.001), longitude=Some(0.002), userId= user.id.toString, groupId = user.getGroups.head.id.toString, mainPostId= None, commentIds=None, tags=None)
-          user.post(post)
-          val foundPost = Post.findById(post.id)
+        val testFunction = (user:User, post:Post, group:Group)=>{
+           val foundPost = Post.findById(post.id).get
+           foundPost must equalTo(post)
+        }
+        withPost[Post](testFunction)
+      }
 
-        foundPost must equalTo(post)
+    }
+
+    "be retrieve by group" in {
+      running(FakeApplication()){
+        val testFunction = (user:User, post:Post, group:Group) => {
+            val posts = Post.findPostsInGroup(group)
+            posts.size must equalTo(1)
+        }
+        withPost[Int](testFunction)
       }
 
     }
 
     "all be retrieved" in{
       running(FakeApplication()) {
-        val posts = Post.findAll
-        posts.size must equalTo(14)
+        val testFunction = (user:User, post:Post, group:Group) => {
+          val posts = Post.findAll
+          posts.get.size must equalTo(1)
+        }
+        withPost[Int](testFunction)
       }
 
-    }
-
-    "be inserted" in {
-      running(FakeApplication()) {
-        true
-      }
-    }
-
-    "be removable in" in {
-      running(FakeApplication()) {
-        val post = Post.findAll.get.head
-        post.delete must equalTo(1)
-      }
-    }
-
-    "be retrievable of all its Users" in {
-      running(FakeApplication()){
-        true
-      }
-    }
-
-
-    "be assignable to user" in {
-      running(FakeApplication()) {
-        true
-      }
-    }
-    "be removable from user" in {
-      running(FakeApplication()) {
-        true
-      }
     }
 
   }

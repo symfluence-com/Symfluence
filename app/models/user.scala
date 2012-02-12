@@ -131,6 +131,7 @@ case class User(
     }
 
   }
+
   def getFollowers:Option[List[User]]={
     if (followers.isDefined){
       followers
@@ -149,7 +150,7 @@ case class User(
     }
   }
 
-  def joinGroup(group:Group){
+  def joinGroup(group:Group)={
     val count = DB.withConnection{ implicit connection =>
       SQL(
         """
@@ -163,6 +164,23 @@ case class User(
     }
     else{
         false
+    }
+  }
+
+
+  def leaveGroup(group:Group)={
+    val count = DB.withConnection{ implicit connection => 
+      SQL(
+        """
+          DELETE FROM users_groups WHERE user_id = {user_id} AND group_id = {group_id}
+        """
+      ).on("user_id" -> this.id, "group_id" -> group.id).executeUpdate
+    }
+    if(count > 0){
+      true
+    }
+    else{
+      false
     }
   }
 
@@ -189,6 +207,7 @@ case class User(
       }
       count
   }
+
 }
 
 object User {
