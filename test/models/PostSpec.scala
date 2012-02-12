@@ -26,6 +26,7 @@ object PostSpec extends Specification {
     user.post(post)
     val result =testFunction(user, post, group)
     user.deletePost(post)
+    user.leaveGroup(group)
     result
   }
 

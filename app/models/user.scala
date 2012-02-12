@@ -1,9 +1,6 @@
 package models;
 
 
-import org.joda.time._
-import org.joda.time.format._
-
 import persistence._
 import exception._
 
@@ -33,8 +30,8 @@ case class User(
     points: Int, 
     credits: Int, 
     fbToken: String,
-    createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
-    updatedAt: DateTime = DateTime.now(DateTimeZone.UTC)){
+    createdAt: Date = new Date(),
+    updatedAt: Date = new Date()){
 
   private var posts:Option[List[Post]]= None
   private var followers:Option[List[User]] = None
@@ -230,7 +227,7 @@ object User {
         get[Date]("users.created_at") ~
         get[Date]("users.updated_at") map {
             case id ~ email ~ userName ~ firstName ~ lastName ~ profilePicId ~ mailingAddress ~ gender ~ dateOfBirth ~ occupation ~  income ~ points ~ credits ~ fbToken ~ createdAt ~ updatedAt => 
-            User(id, email, userName, firstName, lastName, profilePicId, mailingAddress, gender, dateOfBirth, occupation, income, points, credits, fbToken, new DateTime(createdAt), new DateTime(updatedAt))
+            User(id, email, userName, firstName, lastName, profilePicId, mailingAddress, gender, dateOfBirth, occupation, income, points, credits, fbToken, createdAt, updatedAt)
         }
     }
 
@@ -307,8 +304,8 @@ object User {
                 "points" -> user.points,
                 "credits" -> user.credits,
                 "fb_token" -> user.fbToken,
-                "created_at" -> user.createdAt.toDate.asInstanceOf[java.util.Date],
-                "updated_at" -> user.updatedAt.toDate.asInstanceOf[java.util.Date]
+                "created_at" -> user.createdAt,
+                "updated_at" -> user.updatedAt
             ).executeUpdate()
         }
     }

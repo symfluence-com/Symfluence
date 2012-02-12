@@ -12,7 +12,8 @@ object ApplicationBuild extends Build {
       "com.mongodb.casbah" %% "casbah" % "2.1.5-1",
       "joda-time" % "joda-time" % "2.0",
       "org.joda" % "joda-convert" % "1.2",
-      "net.sf.ehcache" %  "ehcache-core" %   "2.5.0"
+      "net.sf.ehcache" %  "ehcache-core" %   "2.5.0",
+      "mysql" % "mysql-connector-java" % "5.1.10"
     )
 
     val main = PlayProject(appName, appVersion, appDependencies, mainLang = SCALA).settings(
