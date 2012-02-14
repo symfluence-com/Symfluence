@@ -95,9 +95,11 @@ object Post{
     Some(Mongo.posts.find.toList.map(rawObject => Post.postMapper(rawObject)))
   }
 
-  def findPostsInGroup(group:Group) ={
-    val posts = Some(Mongo.posts.find(MongoDBObject("group_id" -> group.id)).toList.map(rawObject=>
-      Post.postMapper(rawObject)))
+  def findPostsInGroup(group:Group, offset:Int=0, limit:Int=20) ={
+    val posts = Some(Mongo.posts.find(MongoDBObject("group_id" -> group.id)).
+        sort(MongoDBObject("timestamp"-> -1)).skip(offset).limit(limit).
+            toList.map(rawObject=>
+                    Post.postMapper(rawObject)))
     posts
 
   }
