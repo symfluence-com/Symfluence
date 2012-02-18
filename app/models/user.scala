@@ -49,36 +49,61 @@ case class User(
 
   def post(postObject:Post) ={
     val rawObject = postObject.toRawObject
-    Mongo.posts.save(rawObject)
-    val count = DB.withConnection{ implicit connection =>
-      SQL(
-          """
-            INSERT INTO users_posts
-            (user_id, post_id, group_id, created_at, updated_at) 
-            VALUES({user_id}, {post_id}, {group_id}, {created_at}, {updated_at})
-          """
-        ).on("user_id" -> this.id, "post_id" -> postObject.id, "group_id"-> postObject.groupId, "created_at"-> new Date(), "updated_at" -> new Date()).executeUpdate()
+    if(Mongo.posts.save(rawObject).getN == 1){
+        try{
+            val count = DB.withTransaction{ implicit connection =>
+              SQL(
+                  """
+                    INSERT INTO users_posts
+                    (user_id, post_id, group_id, created_at, updated_at) 
+                    VALUES({user_id}, {post_id}, {group_id}, {created_at}, {updated_at})
+                  """
+                ).on("user_id" -> this.id, "post_id" -> postObject.id, "group_id"-> postObject.groupId, "created_at"-> new Date(), "updated_at" -> new Date()).executeUpdate()
+            }
+            if (posts.isDefined){
+                posts = Some(postObject::posts.get)
+            }
+            true
+        }
+        catch{
+            case _ => {
+                Mongo.posts.remove(MongoDBObject("_id"->postObject.id))
+                false
+            }
+        }
     }
-    if (posts.isDefined){
-        posts = Some(postObject::posts.get)
+    else{
+        false
     }
 
   }
 
   def deletePost(post:Post){
     if(post.userId == this.id.toString){
-      Mongo.posts.remove(MongoDBObject("_id" -> post.id))
-       val count = DB.withConnection{ implicit connection =>
-          SQL(
-              """
-                delete from users_posts where users_posts.post_id ={post_id}
-              """
-            ).on("post_id" -> post.id).executeUpdate()
+      if(Mongo.posts.remove(MongoDBObject("_id" -> post.id)).getN == 1){
+          try{
+              val count = DB.withTransaction{ implicit connection =>
+                  SQL(
+                      """
+                      delete from users_posts where users_posts.post_id ={post_id}
+                      """
+                  ).on("post_id" -> post.id).executeUpdate()
+              }
+              if (posts.isDefined){
+                  posts = Some(posts.get.filterNot(postExisting => { postExisting == post }))
+              }
+              true
+          }
+          catch{
+            case _ =>{
+                Mongo.posts.save(post.toRawObject)
+                false
+            }
+          }
       }
-      if (posts.isDefined){
-          posts = Some(posts.get.filterNot(postExisting => { postExisting == post }))
+      else{
+        false
       }
-
     }
     else{
       throw new NotAuthorizedException()
@@ -93,7 +118,7 @@ case class User(
       else{
         followers = Some(user::Nil)
       }
-      DB.withConnection{ implicit connection =>
+      DB.withTransaction{ implicit connection =>
           SQL(
           "INSERT INTO users_followers(user_id, follower_id, created_at, updated_at) VALUES({user_id}, {follower_id},{created_at}, {updated_at})"
         ).on("user_id" -> this.id, "follower_id" -> user.id, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
@@ -112,7 +137,7 @@ case class User(
   }
 
   def unfollowUser(user:User){
-    val count = DB.withConnection{ implicit connection =>
+    val count = DB.withTransaction{ implicit connection =>
       SQL(
         "DELETE FROM users_followers WHERE user_id={user_id} and  follower_id={follower_id}"
       ).on("user_id" -> this.id, "follower_id" -> user.id).executeUpdate()
@@ -148,7 +173,7 @@ case class User(
   }
 
   def joinGroup(group:Group)={
-    val count = DB.withConnection{ implicit connection =>
+    val count = DB.withTransaction{ implicit connection =>
       SQL(
         """
           INSERT INTO users_groups(user_id, group_id, created_at, updated_at) 
@@ -166,7 +191,7 @@ case class User(
 
 
   def leaveGroup(group:Group)={
-    val count = DB.withConnection{ implicit connection => 
+    val count = DB.withTransaction{ implicit connection => 
       SQL(
         """
           DELETE FROM users_groups WHERE user_id = {user_id} AND group_id = {group_id}
@@ -195,7 +220,7 @@ case class User(
 
 
   def delete={
-    val count = DB.withConnection{ implicit connection => 
+    val count = DB.withTransaction{ implicit connection => 
           SQL(
             """ 
               DELETE FROM users where id = {user_id}

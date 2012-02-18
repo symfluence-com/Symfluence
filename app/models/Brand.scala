@@ -25,7 +25,7 @@ case class Brand(
   }
 
   def delete={
-    val count = DB.withConnection{ implicit connection => 
+    val count = DB.withTransaction{ implicit connection => 
         SQL(
           """ 
             DELETE FROM Brands where id = {Brand_id}
@@ -60,7 +60,7 @@ object Brand{
     }
 
     def insert(Brand: Brand) = {
-        DB.withConnection { implicit connection =>
+        DB.withTransaction { implicit connection =>
             SQL(
                 """
                 insert into Brands(id, name, profile_pic_id) 

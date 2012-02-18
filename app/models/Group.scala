@@ -39,14 +39,14 @@ case class Group(
   }
 
   def delete={
-    val count = DB.withConnection{ implicit connection => 
+    val count = DB.withTransaction{ implicit connection => 
         SQL(
           """ 
             DELETE FROM groups where id = {group_id}
           """
         ).on("group_id"  -> this.id).executeUpdate 
     }
-  count
+    count
   }
 
 }
@@ -69,12 +69,12 @@ object Group{
 
     def findByName(name: String): Option[Group] = {
         DB.withConnection { implicit connection =>
-        SQL("select * from groups where name = {name}").on("name" -> name).as(Group.simple.singleOpt)
+            SQL("select * from groups where name = {name}").on("name" -> name).as(Group.simple.singleOpt)
         }
     }
 
     def insert(group: Group) = {
-        DB.withConnection { implicit connection =>
+        DB.withTransaction { implicit connection =>
             SQL(
                 """
                 insert into groups(id, name, profile_pic_id, description) 

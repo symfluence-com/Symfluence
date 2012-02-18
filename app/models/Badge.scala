@@ -39,7 +39,7 @@ case class Badge(
   }
 
   def delete={
-    val count = DB.withConnection{ implicit connection => 
+    val count = DB.withTransaction{ implicit connection => 
         SQL(
           """ 
             DELETE FROM Badges where id = {Badge_id}
@@ -74,7 +74,7 @@ object Badge{
     }
 
     def insert(Badge: Badge) = {
-        DB.withConnection { implicit connection =>
+        DB.withTransaction { implicit connection =>
             SQL(
                 """
                 insert into badges(id, name, profile_pic_id, description) 
