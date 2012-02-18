@@ -12,11 +12,26 @@ object UserSpec extends Specification {
   import models._
 
   def withGroup[A](testFunction:(User, Group)=> MatchResult[A])={
-    val user = User.findAll.head
-    val group = Group.findAll.head
+    val user = User( email="frank_awesomeness@gmail.com", 
+                userName = "frank",
+                firstName= "Frank Awesomeness", 
+                lastName= "Lee",
+                profilePicId = "frankAwesomeness", 
+                mailingAddress = Some("singapore"),
+                gender = Some("M"),
+                dateOfBirth = Some(new Date()),
+                occupation = Some("Boss"),
+                income = Some(10000000.0),
+                points=100, 
+                credits=100, 
+                fbToken="fdjsklfjds"
+          )
+    User.insert(user)
+    val group = Group.findAll.tail.head
     user.joinGroup(group)
     val result =testFunction(user, group)
     user.leaveGroup(group)
+    user.delete
     result
   }
 
@@ -145,7 +160,7 @@ object UserSpec extends Specification {
       running(FakeApplication()){
         val testFunction = (user:User, group:Group) => {
           group.getUsers.size must equalTo(1)
-          user.getGroups.size must equalTo(2)
+          user.getGroups.size must equalTo(1)
         }
         withGroup(testFunction)
       }

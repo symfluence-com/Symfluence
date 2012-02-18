@@ -89,7 +89,7 @@ object Badge{
         }
     }
 
-  
+
     def findAll(): Seq[Badge] = {
         DB.withConnection { implicit connection =>
             SQL("select * from badges").as(Badge.simple *) 

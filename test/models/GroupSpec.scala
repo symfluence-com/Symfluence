@@ -55,6 +55,7 @@ object GroupSpec extends Specification {
     "can remove Group" in {
         running(FakeApplication()) {
           val group = Group.findByName(name="Paper Planes").get
+          println("GROUP NAME: "+group.name)
           group.delete must equalTo(1)
         }
       }
