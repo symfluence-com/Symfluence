@@ -55,7 +55,6 @@ case class User(
     getPosts("users_dislike_posts")
   }
 
-
   def post(postObject:Post) ={
     val rawObject = postObject.toRawObject
     if(Mongo.posts.save(rawObject).getN == 1){
