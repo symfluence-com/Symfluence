@@ -35,6 +35,26 @@ object UserSpec extends Specification {
     result
   }
 
+  def withPost[A](testFunction:(User, Group, Post) => MatchResult[A])={
+    val addPostFn=(user:User, group:Group) =>{
+      val post = Post(
+        text=Some("Test Post"),
+        imageId=None, 
+        coordinates=Some(0.001, 0.002),
+        userId= user.id.toString,
+        groupId = group.id.toString,
+        mainPostId= None,
+        commentIds=None,
+        tags=None)
+
+        user.post(post)
+        val result =testFunction(user, group, post)
+        user.deletePost(post)
+        result
+    }
+    withGroup[A](addPostFn)
+  }
+
   "User" should {
     "be retrieved by id" in {
       running(FakeApplication()) {
@@ -100,6 +120,57 @@ object UserSpec extends Specification {
       }
     }
 
+    "can Fav Post" in {
+      running(FakeApplication()){
+        val testfn = (user:User, group:Group, post:Post) => {
+          val oldfavpostcount = user.getFavPosts.size
+          user.favPost(post)
+          val result = user.getFavPosts.size must equalTo(oldfavpostcount+1)
+          user.unfavPost(post)
+          result
+        }
+        withPost(testfn)
+      }
+    }
+
+    "can unFav Post" in {
+       running(FakeApplication()){
+        val testfn = (user:User, group:Group, post:Post) => {
+          user.favPost(post)
+          val oldfavpostcount = user.getFavPosts.size
+          user.unfavPost(post)
+          user.getFavPosts.size must equalTo(oldfavpostcount-1)
+        }
+        withPost(testfn)
+      }
+    }
+
+    "can dislike Post" in {
+      running(FakeApplication()){
+        val testfn = (user:User, group:Group, post:Post) => {
+          val olddislikepostcount = user.getDislikePosts.size
+          user.dislikePost(post)
+          val result = user.getDislikePosts.size must equalTo(olddislikepostcount+1)
+          user.unDislikePost(post)
+          result
+        }
+        withPost(testfn)
+      }
+    }
+
+
+    "can undislike Post" in {
+      running(FakeApplication()){
+        val testfn = (user:User, group:Group, post:Post) => {
+          user.dislikePost(post)
+          val olddislikepostcount = user.getDislikePosts.size
+          user.unDislikePost(post)
+          user.getDislikePosts.size must equalTo(olddislikepostcount-1)
+        }
+        withPost(testfn)
+      }
+
+    }
 
    "can delete post by user" in {
       running(FakeApplication()){

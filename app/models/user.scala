@@ -47,6 +47,15 @@ case class User(
     }
   }
 
+  def getFavPosts:List[Post]={
+    getPosts("users_fav_posts")
+  }
+
+  def getDislikePosts:List[Post]={
+    getPosts("users_dislike_posts")
+  }
+
+
   def post(postObject:Post) ={
     val rawObject = postObject.toRawObject
     if(Mongo.posts.save(rawObject).getN == 1){
@@ -72,11 +81,11 @@ case class User(
   }
 
   def favPost(postObject:Post)={
-    postRelationConstructiveAction(postObject, "users_fave_posts")
+    postRelationConstructiveAction(postObject, "users_fav_posts")
   }
 
   def unfavPost(postObject:Post)={
-    postRelationDestructiveAction(postObject, "users_fave_posts")
+    postRelationDestructiveAction(postObject, "users_fav_posts")
   }
 
   def dislikePost(postObject:Post)={
@@ -284,6 +293,26 @@ case class User(
     else{
         throw new NotAuthorizedException()
     }
+  }
+
+  private def getPosts(tableName:String)={
+      val postIds = DB.withConnection{ implicit connection =>
+          SQL(
+              """
+              SELECT post_id FROM
+              """
+              + tableName +
+              """
+              WHERE user_id = {user_id}
+              """
+          ).on("user_id" -> this.id).apply.map(
+              row => {
+                  row[String]("post_id")
+              }
+          ).toList
+      }
+      Mongo.posts.find( "_id" $in postIds).toList.map(rawObject => Post.postMapper(rawObject))
+
   }
 
 }
