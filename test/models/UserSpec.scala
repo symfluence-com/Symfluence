@@ -92,26 +92,23 @@ object UserSpec extends Specification {
     "can Post" in {
       running(FakeApplication()){
         val user = User.findById("4789200253f411e1b371040cced6719e").get
+        val oldPostCount = user.getPosts.get.size
         val post = Post(text=Some("Test Post"), imageId=None, coordinates=Some(0.001, 0.002),
           userId= user.id.toString, groupId = user.getGroups.head.id.toString, mainPostId= None, commentIds=None, tags=None)
         user.post(post)
-        user.asInstanceOf[User].getPosts.get.length must equalTo(1)
+        user.asInstanceOf[User].getPosts.get.length must equalTo(oldPostCount+1)
       }
     }
 
-    "can get all Posts by Users" in {
-      running(FakeApplication()){
-        val user = User.findById("4789200253f411e1b371040cced6719e")
-        user.get.asInstanceOf[User].getPosts.get.length must equalTo(1)
-      }
-    }
 
    "can delete post by user" in {
       running(FakeApplication()){
         val user = User.findById("4789200253f411e1b371040cced6719e").get
-        val post = user.getPosts.get.head
+        val userPosts = user.getPosts.get
+        val oldPostCount = userPosts.size
+        val post = userPosts.head
         user.deletePost(post)
-        user.getPosts.get.length must equalTo(0)
+        user.getPosts.get.length must equalTo(oldPostCount-1)
       }
    }
 

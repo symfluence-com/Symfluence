@@ -51,22 +51,15 @@ case class User(
     val rawObject = postObject.toRawObject
     if(Mongo.posts.save(rawObject).getN == 1){
         try{
-            val count = DB.withTransaction{ implicit connection =>
-              SQL(
-                  """
-                    INSERT INTO users_posts
-                    (user_id, post_id, group_id, created_at, updated_at) 
-                    VALUES({user_id}, {post_id}, {group_id}, {created_at}, {updated_at})
-                  """
-                ).on("user_id" -> this.id, "post_id" -> postObject.id, "group_id"-> postObject.groupId, "created_at"-> new Date(), "updated_at" -> new Date()).executeUpdate()
-            }
+            val count = postRelationConstructiveAction(postObject, "users_posts", false)
             if (posts.isDefined){
                 posts = Some(postObject::posts.get)
             }
             true
         }
         catch{
-            case _ => {
+            case ex:Exception => {
+                println("EXCEPTION: "+ex)
                 Mongo.posts.remove(MongoDBObject("_id"->postObject.id))
                 false
             }
@@ -78,36 +71,46 @@ case class User(
 
   }
 
+  def favPost(postObject:Post)={
+    postRelationConstructiveAction(postObject, "users_fave_posts")
+  }
+
+  def unfavPost(postObject:Post)={
+    postRelationDestructiveAction(postObject, "users_fave_posts")
+  }
+
+  def dislikePost(postObject:Post)={
+    postRelationConstructiveAction(postObject, "users_dislike_posts")
+
+  }
+
+  def unDislikePost(postObject:Post)={
+    postRelationDestructiveAction(postObject, "users_dislike_posts")
+  }
+
   def deletePost(post:Post){
-    if(post.userId == this.id.toString){
-      if(Mongo.posts.remove(MongoDBObject("_id" -> post.id)).getN == 1){
-          try{
-              val count = DB.withTransaction{ implicit connection =>
-                  SQL(
-                      """
-                      delete from users_posts where users_posts.post_id ={post_id}
-                      """
-                  ).on("post_id" -> post.id).executeUpdate()
+      val deletePostFn = ()=>{
+          if(Mongo.posts.remove(MongoDBObject("_id" -> post.id)).getN == 1){
+              try{
+                  val count = postRelationDestructiveAction(post, "users_posts")
+                  if (posts.isDefined){
+                      posts = Some(posts.get.filterNot(postExisting => { postExisting == post }))
+                  }
+                  true
               }
-              if (posts.isDefined){
-                  posts = Some(posts.get.filterNot(postExisting => { postExisting == post }))
+              catch{
+                case ex:Exception =>{
+                    println("DELETE POST EXCEPTION: "+ ex)
+                    Mongo.posts.save(post.toRawObject)
+                    false
+                }
               }
-              true
           }
-          catch{
-            case _ =>{
-                Mongo.posts.save(post.toRawObject)
-                false
-            }
+          else{
+            false
           }
       }
-      else{
-        false
-      }
-    }
-    else{
-      throw new NotAuthorizedException()
-    }
+     withAuthorizedUser[Boolean](post)(deletePostFn)
   }
 
   def followUser(user:User){
@@ -228,6 +231,59 @@ case class User(
           ).on("user_id"  -> this.id).executeUpdate 
       }
       count
+  }
+
+  private def postRelationConstructiveAction(postObject:Post, tableName:String, authorizationNeeded:Boolean=true)={
+    val constructiveFn=()=>{
+          val count = DB.withTransaction{ implicit connection => 
+                    SQL(
+                        """
+                            INSERT INTO
+                        """
+                        + tableName +
+                        """
+                            (user_id, post_id, group_id, created_at, updated_at) 
+                            VALUES({user_id}, {post_id}, {group_id}, {created_at}, {updated_at})
+                        """
+                    ).on("user_id" -> this.id, "post_id" -> postObject.id, "group_id" -> postObject.groupId, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
+          }
+          count
+      }
+   if (authorizationNeeded){
+        withAuthorizedUser[Int](postObject)(constructiveFn)
+    }
+    else{
+        constructiveFn()
+    }
+  }
+
+  private def postRelationDestructiveAction(postObject:Post, tableName:String)={
+    val destructiveFn=()=>{
+        val count = DB.withTransaction{ implicit connection => 
+            SQL(
+                """
+                    DELETE FROM 
+                """
+                + tableName +
+                """
+                    WHERE user_id = {user_id} and post_id = {post_id}
+
+                """
+            ).on("user_id" -> this.id, "post_id" -> postObject.id).executeUpdate()
+        }
+        count
+    }
+    withAuthorizedUser[Int](postObject)(destructiveFn)
+
+  }
+
+  private def withAuthorizedUser[A](postObject:Post)(fn:()=>A){
+    if (postObject.userId == this.id.toString){
+        fn()
+    }
+    else{
+        throw new NotAuthorizedException()
+    }
   }
 
 }
