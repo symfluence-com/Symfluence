@@ -1,6 +1,21 @@
 # --- Sample dataset
 
 # --- !Ups
+
+delete from users_badges;
+delete from badges;
+delete from merchant_posts;
+delete from merchants;
+delete from users_fav_posts;
+delete from users_dislike_posts;
+delete from users_saved_posts;
+delete from users_posts;
+delete from users_categories;
+delete from users_followers;
+delete from categories;
+delete from users;
+
+
 INSERT INTO `badges` (`id`, `name`, `description`, `profile_pic_id`, `created_at`, `updated_at`)
 VALUES
 	(1, 'Badge_Name_1', 'description1', 'Badge_Pic_1', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
@@ -14,13 +29,13 @@ VALUES
 	(9, 'Badge_Name_9', 'description9', 'Badge_Pic_9', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(10, 'Badge_Name_10', 'description10', 'Badge_Pic_10', '2012-02-10 14:34:03', '2012-02-10 14:34:03');
 
-INSERT INTO `brands` (`id`, `name`, `profile_pic_id`, `created_at`, `updated_at`)
+INSERT INTO `merchants` (`id`, `name`, `profile_pic_id`, `created_at`, `updated_at`)
 VALUES
 	(1, 'Brand_Name_Temp1', 'fdsjklsf', NULL, NULL),
 	(2, 'Brand_Name_Temp2', 'fdsjklsf22', NULL, NULL),
 	(3, 'Brand_Name_Temp3', 'fdsjklsf223', NULL, NULL);
 
-INSERT INTO `groups` (`id`, `name`, `profile_pic_id`, `description`, `created_at`, `updated_at`)
+INSERT INTO `categories` (`id`, `name`, `profile_pic_id`, `description`, `created_at`, `updated_at`)
 VALUES
 	('47891b2a53f411e1b371040cced6719e', 'Frank Fantastic Group47891b2a53f411e1b371040cced6719e', '4f352adb2d26dd38be000001', 'Frank Awesome Group47891b2a53f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	('47891bac53f411e1b371040cced6719e', 'Frank Fantastic Group47891bac53f411e1b371040cced6719e', '4f352adb2d26dd38be000003', 'Frank Awesome Group47891bac53f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
@@ -48,7 +63,7 @@ VALUES
 	('478920ac53f411e1b371040cced6719e', 'frank10', 'Frank478920ac53f411e1b371040cced6719e', 'ten', 'frank478920ac53f411e1b371040cced6719e@email.com', '4f352adb2d26dd38be000027', NULL, NULL, NULL, NULL, NULL, 53, 84, '478920c053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03');
 
 
-INSERT INTO `users_groups` (`id`, `user_id`, `group_id`, `created_at`, `updated_at`)
+INSERT INTO `users_categories` (`id`, `user_id`, `category_id`, `created_at`, `updated_at`)
 VALUES
 	(51, '47891d6453f411e1b371040cced6719e', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(52, '47891ee053f411e1b371040cced6719e', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
@@ -61,7 +76,7 @@ VALUES
 	(59, '4789207053f411e1b371040cced6719e', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(60, '478920ac53f411e1b371040cced6719e', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03');
 
-INSERT INTO `users_posts` (`id`, `user_id`, `post_id`, `group_id`, `created_at`, `updated_at`)
+INSERT INTO `users_posts` (`id`, `user_id`, `post_id`, `category_id`, `created_at`, `updated_at`)
 VALUES
 	(21, '4789200253f411e1b371040cced6719e', '4f352adb2d26dd38be000029', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
 	(22, '4789200253f411e1b371040cced6719e', '4f352adb2d26dd38be00002d', '47891c6053f411e1b371040cced6719e', '2012-02-10 14:34:03', '2012-02-10 14:34:03'),
@@ -82,8 +97,17 @@ VALUES
 
   
 #--- !Downs
+delete from users_badges;
+delete from badges;
+delete from merchant_posts;
+delete from merchants;
+delete from users_fav_posts;
+delete from users_dislike_posts;
+delete from users_saved_posts;
 delete from users_posts;
-delete from users_groups;
+delete from users_categories;
 delete from users_followers;
+delete from categories;
 delete from users;
-delete from groups;
+
+

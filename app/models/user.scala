@@ -183,14 +183,14 @@ case class User(
     }
   }
 
-  def joinGroup(group:Group)={
+  def joinCategory(category:Category)={
     val count = DB.withTransaction{ implicit connection =>
       SQL(
         """
-          INSERT INTO users_groups(user_id, group_id, created_at, updated_at) 
-          VALUES({user_id}, {group_id}, {created_at}, {updated_at})
+          INSERT INTO users_categories(user_id, category_id, created_at, updated_at) 
+          VALUES({user_id}, {category_id}, {created_at}, {updated_at})
         """
-    ).on("user_id" -> this.id, "group_id" -> group.id, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
+    ).on("user_id" -> this.id, "category_id" -> category.id, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
     }
     if(count > 0){
         true
@@ -201,13 +201,13 @@ case class User(
   }
 
 
-  def leaveGroup(group:Group)={
+  def leaveCategory(category:Category)={
     val count = DB.withTransaction{ implicit connection => 
       SQL(
         """
-          DELETE FROM users_groups WHERE user_id = {user_id} AND group_id = {group_id}
+          DELETE FROM users_categories WHERE user_id = {user_id} AND category_id = {category_id}
         """
-      ).on("user_id" -> this.id, "group_id" -> group.id).executeUpdate
+      ).on("user_id" -> this.id, "category_id" -> category.id).executeUpdate
     }
     if(count > 0){
       true
@@ -217,16 +217,16 @@ case class User(
     }
   }
 
-  def getGroups:Seq[Group]={
-      val groups = DB.withConnection{implicit connection =>
+  def getCategories:Seq[Category]={
+      val categories = DB.withConnection{implicit connection =>
         SQL(
            """
-             SELECT groups.* from groups, users_groups where users_groups.user_id =
-             {user_id} and groups.id = users_groups.group_id
+             SELECT categories.* from categories, users_categories where users_categories.user_id =
+             {user_id} and categories.id = users_categories.category_id
            """
-       ).on("user_id" -> this.id).as(Group.simple *)
+       ).on("user_id" -> this.id).as(Category.simple *)
       }
-      groups
+      categories
   }
 
 
@@ -250,10 +250,10 @@ case class User(
                         """
                         + tableName +
                         """
-                            (user_id, post_id, group_id, created_at, updated_at) 
-                            VALUES({user_id}, {post_id}, {group_id}, {created_at}, {updated_at})
+                            (user_id, post_id, category_id, created_at, updated_at) 
+                            VALUES({user_id}, {post_id}, {category_id}, {created_at}, {updated_at})
                         """
-                    ).on("user_id" -> this.id, "post_id" -> postObject.id, "group_id" -> postObject.groupId, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
+                    ).on("user_id" -> this.id, "post_id" -> postObject.id, "category_id" -> postObject.categoryId, "created_at" -> new Date(), "updated_at" -> new Date()).executeUpdate()
           }
           count
       }

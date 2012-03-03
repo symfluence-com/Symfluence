@@ -11,7 +11,7 @@ case class Post(id: String = ObjectId.get.toString,
                 imageId:Option[String],
                 coordinates:Option[Tuple2[Double, Double]],
                 userId:String,
-                groupId:String, 
+                categoryId:String, 
                 mainPostId:Option[String],
                 commentIds:Option[List[String]], 
                 tags:Option[List[String]],
@@ -38,7 +38,7 @@ case class Post(id: String = ObjectId.get.toString,
         builder += "coordinates" -> None
     }
     builder += "user_id" -> this.userId
-    builder += "group_id" -> this.groupId
+    builder += "category_id" -> this.categoryId
     val commentListBuilder =  MongoDBList.newBuilder
     if(this.commentIds.isDefined){
         val commentListBuilder =  MongoDBList.newBuilder
@@ -71,7 +71,7 @@ case class Post(id: String = ObjectId.get.toString,
 object Post{
 
   Mongo.posts.ensureIndex(MongoDBObject("coordinates" -> "2d"), "locationIndex")
-  Mongo.posts.ensureIndex(MongoDBObject("timestamp" -> 1, "user_id" -> 1, "group_id" -> 1), "PostIndex")
+  Mongo.posts.ensureIndex(MongoDBObject("timestamp" -> 1, "user_id" -> 1, "category_id" -> 1), "PostIndex")
 
   def postMapper(rawObject:DBObject):Post={
     val coordinatesList = rawObject.getAs[BasicDBList]("coordinates")
@@ -83,7 +83,7 @@ object Post{
       None
     }
     val post = Post(rawObject.getAs[String]("_id").get, rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
-      coordinates, rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("group_id").get,
+      coordinates, rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("category_id").get,
       rawObject.getAs[String]("main_post_id"), rawObject.getAs[List[String]]("comment_ids"),
       rawObject.getAs[List[String]]("tags"), rawObject.getAs[Long]("timestamp").get.toLong)
     post
@@ -98,13 +98,13 @@ object Post{
         toList.map(rawObject => Post.postMapper(rawObject)))
   }
 
-  def findPostsInGroup(groups:List[Group], user:Option[User]=None, offset:Int=0, limit:Int=20) ={
-    val groupIds = groups.map(group => group.id.toString)
+  def findPostsInCategory(categories:List[Category], user:Option[User]=None, offset:Int=0, limit:Int=20) ={
+    val categoryIds = categories.map(category => category.id.toString)
     val query = if(user.isDefined){
-        (("group_id" $in groupIds) ++ ("user_id" -> user.get.id.toString))
+        (("category_id" $in categoryIds) ++ ("user_id" -> user.get.id.toString))
     }
     else{
-        ("group_id" $in groupIds)
+        ("category_id" $in categoryIds)
     }
     val postsQuery = Mongo.posts.find(query).limit(limit).skip(offset).sort(MongoDBObject("timestamp"-> -1)) 
     Some(postsQuery.toList.map(rawObject=>Post.postMapper(rawObject)))

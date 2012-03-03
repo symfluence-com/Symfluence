@@ -11,7 +11,7 @@ import java.util.Date
 object UserSpec extends Specification {
   import models._
 
-  def withGroup[A](testFunction:(User, Group)=> MatchResult[A])={
+  def withCategory[A](testFunction:(User, Category)=> MatchResult[A])={
     val user = User( email="frank_awesomeness@gmail.com", 
                 userName = "frank",
                 firstName= "Frank Awesomeness", 
@@ -27,32 +27,32 @@ object UserSpec extends Specification {
                 fbToken="fdjsklfjds"
           )
     User.insert(user)
-    val group = Group.findAll.tail.head
-    user.joinGroup(group)
-    val result =testFunction(user, group)
-    user.leaveGroup(group)
+    val category = Category.findAll.tail.head
+    user.joinCategory(category)
+    val result =testFunction(user, category)
+    user.leaveCategory(category)
     user.delete
     result
   }
 
-  def withPost[A](testFunction:(User, Group, Post) => MatchResult[A])={
-    val addPostFn=(user:User, group:Group) =>{
+  def withPost[A](testFunction:(User, Category, Post) => MatchResult[A])={
+    val addPostFn=(user:User, category:Category) =>{
       val post = Post(
         text=Some("Test Post"),
         imageId=None, 
         coordinates=Some(0.001, 0.002),
         userId= user.id.toString,
-        groupId = group.id.toString,
+        categoryId = category.id.toString,
         mainPostId= None,
         commentIds=None,
         tags=None)
 
         user.post(post)
-        val result =testFunction(user, group, post)
+        val result =testFunction(user, category, post)
         user.deletePost(post)
         result
     }
-    withGroup[A](addPostFn)
+    withCategory[A](addPostFn)
   }
 
   "User" should {
@@ -114,7 +114,7 @@ object UserSpec extends Specification {
         val user = User.findById("4789200253f411e1b371040cced6719e").get
         val oldPostCount = user.getPosts.get.size
         val post = Post(text=Some("Test Post"), imageId=None, coordinates=Some(0.001, 0.002),
-          userId= user.id.toString, groupId = user.getGroups.head.id.toString, mainPostId= None, commentIds=None, tags=None)
+          userId= user.id.toString, categoryId = user.getCategories.head.id.toString, mainPostId= None, commentIds=None, tags=None)
         user.post(post)
         user.asInstanceOf[User].getPosts.get.length must equalTo(oldPostCount+1)
       }
@@ -122,7 +122,7 @@ object UserSpec extends Specification {
 
     "can Fav Post" in {
       running(FakeApplication()){
-        val testfn = (user:User, group:Group, post:Post) => {
+        val testfn = (user:User, category:Category, post:Post) => {
           val oldfavpostcount = user.getFavPosts.size
           user.favPost(post)
           val result = user.getFavPosts.size must equalTo(oldfavpostcount+1)
@@ -135,7 +135,7 @@ object UserSpec extends Specification {
 
     "can unFav Post" in {
        running(FakeApplication()){
-        val testfn = (user:User, group:Group, post:Post) => {
+        val testfn = (user:User, category:Category, post:Post) => {
           user.favPost(post)
           val oldfavpostcount = user.getFavPosts.size
           user.unfavPost(post)
@@ -147,7 +147,7 @@ object UserSpec extends Specification {
 
     "can dislike Post" in {
       running(FakeApplication()){
-        val testfn = (user:User, group:Group, post:Post) => {
+        val testfn = (user:User, category:Category, post:Post) => {
           val olddislikepostcount = user.getDislikePosts.size
           user.dislikePost(post)
           val result = user.getDislikePosts.size must equalTo(olddislikepostcount+1)
@@ -161,7 +161,7 @@ object UserSpec extends Specification {
 
     "can undislike Post" in {
       running(FakeApplication()){
-        val testfn = (user:User, group:Group, post:Post) => {
+        val testfn = (user:User, category:Category, post:Post) => {
           user.dislikePost(post)
           val olddislikepostcount = user.getDislikePosts.size
           user.unDislikePost(post)
@@ -217,20 +217,20 @@ object UserSpec extends Specification {
       }
     }
 
-    "can get group" in {
+    "can get category" in {
       running(FakeApplication()){
         val user1 = User.findById("4789200253f411e1b371040cced6719e").get
-        user1.getGroups.size must equalTo(1);
+        user1.getCategories.size must equalTo(1);
       }
     }
 
-    "can join group" in {
+    "can join category" in {
       running(FakeApplication()){
-        val testFunction = (user:User, group:Group) => {
-          group.getUsers.size must equalTo(1)
-          user.getGroups.size must equalTo(1)
+        val testFunction = (user:User, category:Category) => {
+          category.getUsers.size must equalTo(1)
+          user.getCategories.size must equalTo(1)
         }
-        withGroup(testFunction)
+        withCategory(testFunction)
       }
     }
   }

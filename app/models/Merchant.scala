@@ -12,7 +12,7 @@ import anorm.SqlParser._
 import java.util.UUID
 
 
-case class Brand(
+case class Merchant(
   id: Pk[Long] = NotAssigned,
   name: String, profilePicId: String,    
   createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
@@ -28,56 +28,56 @@ case class Brand(
     val count = DB.withTransaction{ implicit connection => 
         SQL(
           """ 
-            DELETE FROM Brands where id = {Brand_id}
+            DELETE FROM merchants where id = {merchants_id}
           """
-        ).on("Brand_id"  -> this.id).executeUpdate 
+        ).on("merchants_id"  -> this.id).executeUpdate 
     }
   count
   }
 
 }
 
-object Brand{
+object Merchant{
     val simple = {
-        get[Pk[Long]]("Brands.id") ~
-        get[String]("Brands.name") ~
-        get[String]("Brands.profile_pic_id") map {
+        get[Pk[Long]]("merchants.id") ~
+        get[String]("merchants.name") ~
+        get[String]("merchants.profile_pic_id") map {
             case id  ~ name ~ profilePicId 
-             => Brand(id, name, profilePicId)
+             => Merchant(id, name, profilePicId)
         }
     }
 
-    def findById(id: String): Option[Brand] = {
+    def findById(id: String): Option[Merchant] = {
         DB.withConnection { implicit connection =>
-        SQL("select * from Brands where id = {id}").on("id" -> id).as(Brand.simple.singleOpt)
+        SQL("select * from merchants where id = {id}").on("id" -> id).as(Merchant.simple.singleOpt)
         }
     }
 
-    def findByName(name: String): Option[Brand] = {
+    def findByName(name: String): Option[Merchant] = {
         DB.withConnection { implicit connection =>
-        SQL("select * from Brands where name = {name}").on("name" -> name).as(Brand.simple.singleOpt)
+        SQL("select * from merchants where name = {name}").on("name" -> name).as(Merchant.simple.singleOpt)
         }
     }
 
-    def insert(Brand: Brand) = {
+    def insert(merchant: Merchant) = {
         DB.withTransaction { implicit connection =>
             SQL(
                 """
-                insert into Brands(id, name, profile_pic_id) 
+                insert into merchants(id, name, profile_pic_id) 
                 values ({id}, {name}, {profile_pic_id})
                 """
             ).on(
-                "id" -> Brand.id, 
-                "name"-> Brand.name, 
-                "profile_pic_id" -> Brand.profilePicId
+                "id" -> merchant.id, 
+                "name"-> merchant.name, 
+                "profile_pic_id" -> merchant.profilePicId
             ).executeUpdate()
         }
     }
 
   
-    def findAll(): Seq[Brand] = {
+    def findAll(): Seq[Merchant] = {
         DB.withConnection { implicit connection =>
-            SQL("select * from Brands").as(Brand.simple *) 
+            SQL("select * from merchants").as(Merchant.simple *) 
         }
     }
 
