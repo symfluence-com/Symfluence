@@ -6,7 +6,23 @@ import org.bson.types.ObjectId
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 
+
+trait BasePost{
+    def id:String
+    def postType:String
+    def text:Option[String]
+    def imageId:Option[String]
+    def coordinates:Option[Tuple2[Double, Double]]
+    def userId:String
+    def categoryId:String
+    def mainPostId:Option[String]
+    def commentIds:Option[List[String]]
+    def tags:Option[List[String]]
+    def timestamp:Long
+}
+
 case class Post(id: String = ObjectId.get.toString,
+                postType:String="normal",
                 text:Option[String],
                 imageId:Option[String],
                 coordinates:Option[Tuple2[Double, Double]],
@@ -15,7 +31,8 @@ case class Post(id: String = ObjectId.get.toString,
                 mainPostId:Option[String],
                 commentIds:Option[List[String]], 
                 tags:Option[List[String]],
-                timestamp:Long=System.currentTimeMillis) {
+                timestamp:Long=System.currentTimeMillis)
+            extends BasePost{
 
   def comments:List[Post]={
     val q = "_id" $in commentIds
@@ -26,6 +43,7 @@ case class Post(id: String = ObjectId.get.toString,
   def toRawObject={
     val builder = MongoDBObject.newBuilder
     builder += "_id" -> this.id
+    builder += "post_type" -> this.postType
     builder += "text" -> this.text
     builder += "image_id" -> this.imageId
     if(this.coordinates.isDefined){
@@ -82,7 +100,8 @@ object Post{
     else{
       None
     }
-    val post = Post(rawObject.getAs[String]("_id").get, rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
+    val post = Post(rawObject.getAs[String]("_id").get, rawObject.getAs[String]("post_type").get,
+      rawObject.getAs[String]("text"), rawObject.getAs[String]("image_id"), 
       coordinates, rawObject.getAs[String]("user_id").get, rawObject.getAs[String]("category_id").get,
       rawObject.getAs[String]("main_post_id"), rawObject.getAs[List[String]]("comment_ids"),
       rawObject.getAs[List[String]]("tags"), rawObject.getAs[Long]("timestamp").get.toLong)
@@ -122,8 +141,8 @@ object Post{
     }
 
   }
-
-
 }
+
+
 
 // vim: set ts=4 sw=4 et:
