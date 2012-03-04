@@ -6,6 +6,8 @@ import org.bson.types.ObjectId
 import com.mongodb.casbah.Imports._
 import com.mongodb.casbah.commons.conversions.scala._
 
+import java.util.Date
+
 
 trait BasePost{
     def id:String
@@ -144,5 +146,21 @@ object Post{
 }
 
 
+case class CouponPost(id: String = ObjectId.get.toString,
+                postType:String="coupon",
+                headline:String,
+                text:Option[String],
+                imageId:Option[String],
+                coordinates:Option[Tuple2[Double, Double]],
+                userId:String,
+                categoryId:String, 
+                mainPostId:Option[String],
+                commentIds:Option[List[String]], 
+                tags:Option[List[String]],
+                validTill:Date,
+                timestamp:Long=System.currentTimeMillis)
+            extends BasePost{
+
+}
 
 // vim: set ts=4 sw=4 et:
