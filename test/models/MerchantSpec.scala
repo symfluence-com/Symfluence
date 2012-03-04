@@ -13,7 +13,7 @@ object MerchantSpec extends Specification {
       running(FakeApplication()) {
 
         val merchant = Merchant.findById("1").get
-        merchant.name must equalTo("Merchant_Name_Temp1")
+        merchant.name must equalTo("Brand_Name_Temp1")
         merchant.profilePicId must equalTo("fdsjklsf")
       }
 
@@ -22,8 +22,8 @@ object MerchantSpec extends Specification {
     "be retrieved by name" in {
       running(FakeApplication()) {
 
-        val merchant = Merchant.findByName("Merchant_Name_Temp1").get
-        merchant.name must equalTo("Merchant_Name_Temp1")
+        val merchant = Merchant.findByName("Brand_Name_Temp1").get
+        merchant.name must equalTo("Brand_Name_Temp1")
         merchant.profilePicId must equalTo("fdsjklsf")
       }
 

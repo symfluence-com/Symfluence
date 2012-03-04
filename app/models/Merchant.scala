@@ -13,7 +13,7 @@ import java.util.UUID
 
 
 case class Merchant(
-  id: Pk[Long] = NotAssigned,
+  id: Pk[String]= Id(UUID.randomUUID.toString.replace("-", "")),
   name: String, profilePicId: String,    
   createdAt: DateTime = DateTime.now(DateTimeZone.UTC),
   updatedAt: DateTime = DateTime.now(DateTimeZone.UTC)
@@ -39,7 +39,7 @@ case class Merchant(
 
 object Merchant{
     val simple = {
-        get[Pk[Long]]("merchants.id") ~
+        get[Pk[String]]("merchants.id") ~
         get[String]("merchants.name") ~
         get[String]("merchants.profile_pic_id") map {
             case id  ~ name ~ profilePicId 
